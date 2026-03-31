@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -61,5 +61,125 @@ class User extends Authenticatable
             'allow_ai_recommendation' => 'boolean',
             'password'                => 'hashed',
         ];
+    }
+
+    // ─── Computed helpers ─────────────────────────────
+
+    public function getFullNameAttribute(): string
+    {
+        return trim("{$this->fname} {$this->mname} {$this->lname}");
+    }
+
+    public function getDisplayNameAttribute(): string
+    {
+        return trim("{$this->fname} {$this->lname}");
+    }
+
+    // ─── Social / Feed ────────────────────────────────
+
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    /** Users this user is following */
+    public function following(): HasMany
+    {
+        return $this->hasMany(UserFollow::class, 'follower_id');
+    }
+
+    /** Users following this user */
+    public function followers(): HasMany
+    {
+        return $this->hasMany(UserFollow::class, 'following_id');
+    }
+
+    public function bookmarks(): HasMany
+    {
+        return $this->hasMany(PostBookmark::class);
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    // ─── Groups ───────────────────────────────────────
+
+    public function createdGroups(): HasMany
+    {
+        return $this->hasMany(Group::class, 'creator_id');
+    }
+
+    public function groupMemberships(): HasMany
+    {
+        return $this->hasMany(GroupMember::class);
+    }
+
+    // ─── Messaging ────────────────────────────────────
+
+    public function conversationParticipants(): HasMany
+    {
+        return $this->hasMany(ConversationParticipant::class);
+    }
+
+    public function sentMessages(): HasMany
+    {
+        return $this->hasMany(Message::class, 'sender_user_id');
+    }
+
+    // ─── Doctor Application ───────────────────────────
+
+    public function doctorApplications(): HasMany
+    {
+        return $this->hasMany(DoctorApplication::class);
+    }
+
+    // ─── Resources ────────────────────────────────────
+
+    public function resources(): HasMany
+    {
+        return $this->hasMany(Resource::class);
+    }
+
+    // ─── Help Requests ────────────────────────────────
+
+    /** Help requests submitted by this user (as patient) */
+    public function helpRequests(): HasMany
+    {
+        return $this->hasMany(HelpRequest::class, 'user_id');
+    }
+
+    /** Help requests assigned to this user (as doctor) */
+    public function assignedHelpRequests(): HasMany
+    {
+        return $this->hasMany(HelpRequest::class, 'doctor_id');
+    }
+
+    // ─── Crisis Reports ───────────────────────────────
+
+    public function crisisReports(): HasMany
+    {
+        return $this->hasMany(CrisisReport::class, 'user_id');
+    }
+
+    // ─── Appointments ─────────────────────────────────
+
+    /** Appointments booked by this user (as patient) */
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class, 'patient_id');
+    }
+
+    /** Appointments handled by this user (as doctor) */
+    public function doctorAppointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class, 'doctor_id');
+    }
+
+    /** Schedule slots defined by this user (as doctor) */
+    public function doctorSchedules(): HasMany
+    {
+        return $this->hasMany(DoctorSchedule::class, 'doctor_id');
     }
 }
