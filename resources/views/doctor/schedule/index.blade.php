@@ -7,22 +7,22 @@
 
     {{-- Current Slots --}}
     <div class="xl:col-span-2 space-y-3">
-        <h3 class="text-base font-semibold text-white">Current Availability Slots</h3>
+        <h3 class="text-base font-semibold text-gray-900">Current Availability Slots</h3>
         @php $days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday']; @endphp
         @foreach($days as $day)
         @php $daySlots = $schedules->where('day_of_week', $day); @endphp
         @if($daySlots->isNotEmpty())
-        <div class="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden">
-            <div class="px-4 py-3 border-b border-gray-700 bg-gray-900/40">
-                <p class="text-sm font-medium text-white capitalize">{{ $day }}</p>
+        <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-4 py-3 border-b border-gray-200 bg-gray-50/40">
+                <p class="text-sm font-medium text-gray-900 capitalize">{{ $day }}</p>
             </div>
             @foreach($daySlots as $slot)
-            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-700/50 last:border-0">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200/50 last:border-0">
                 <div class="flex items-center gap-3">
-                    <span class="{{ $slot->is_available ? 'bg-green-500/20 text-green-400' : 'bg-gray-600/40 text-gray-400' }} text-xs px-2 py-0.5 rounded-full">
+                    <span class="{{ $slot->is_available ? 'bg-green-100 text-green-700' : 'bg-gray-600/40 text-gray-500' }} text-xs px-2 py-0.5 rounded-full">
                         {{ $slot->is_available ? 'Available' : 'Unavailable' }}
                     </span>
-                    <span class="text-white text-sm">{{ substr($slot->start_time, 0, 5) }} – {{ substr($slot->end_time, 0, 5) }}</span>
+                    <span class="text-gray-900 text-sm">{{ substr($slot->start_time, 0, 5) }} – {{ substr($slot->end_time, 0, 5) }}</span>
                     <span class="text-gray-500 text-xs">{{ $slot->slot_duration_minutes }}min slots</span>
                 </div>
                 <form method="POST" action="{{ route('doctor.schedule.destroy', $slot) }}" onsubmit="return confirm('Remove this slot?')">
@@ -35,20 +35,20 @@
         @endif
         @endforeach
         @if($schedules->isEmpty())
-        <div class="bg-gray-800 border border-gray-700 rounded-xl p-10 text-center">
-            <p class="text-gray-400 text-sm">No schedule slots yet. Add your availability.</p>
+        <div class="bg-white border border-gray-200 rounded-xl p-10 text-center">
+            <p class="text-gray-500 text-sm">No schedule slots yet. Add your availability.</p>
         </div>
         @endif
     </div>
 
     {{-- Add Slot Form --}}
-    <div class="bg-gray-800 border border-gray-700 rounded-xl p-5 h-fit">
-        <h3 class="text-base font-semibold text-white mb-4">Add Availability Slot</h3>
+    <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5 h-fit">
+        <h3 class="text-base font-semibold text-gray-900 mb-4">Add Availability Slot</h3>
         <form method="POST" action="{{ route('doctor.schedule.store') }}" class="space-y-4">
             @csrf
             <div>
-                <label class="block text-xs text-gray-400 uppercase tracking-wider mb-1.5">Day</label>
-                <select name="day_of_week" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+                <label class="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Day</label>
+                <select name="day_of_week" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500">
                     @foreach($days as $day)
                     <option value="{{ $day }}" {{ old('day_of_week') === $day ? 'selected' : '' }}>{{ ucfirst($day) }}</option>
                     @endforeach
@@ -56,19 +56,19 @@
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs text-gray-400 uppercase tracking-wider mb-1.5">Start Time</label>
+                    <label class="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Start Time</label>
                     <input type="time" name="start_time" value="{{ old('start_time') }}"
-                           class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+                           class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500">
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-400 uppercase tracking-wider mb-1.5">End Time</label>
+                    <label class="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">End Time</label>
                     <input type="time" name="end_time" value="{{ old('end_time') }}"
-                           class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+                           class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500">
                 </div>
             </div>
             <div>
-                <label class="block text-xs text-gray-400 uppercase tracking-wider mb-1.5">Slot Duration</label>
-                <select name="slot_duration_minutes" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+                <label class="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Slot Duration</label>
+                <select name="slot_duration_minutes" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500">
                     <option value="15">15 minutes</option>
                     <option value="30" selected>30 minutes</option>
                     <option value="45">45 minutes</option>
@@ -80,7 +80,7 @@
                 @foreach($errors->all() as $err)<p>{{ $err }}</p>@endforeach
             </div>
             @endif
-            <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 rounded-xl text-sm transition-colors">
+            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-gray-900 font-medium py-3 rounded-xl text-sm transition-colors">
                 Add Slot
             </button>
         </form>

@@ -18,18 +18,18 @@
             ['label' => 'Pending Applications',   'value' => $pendingApplications,   'color' => 'yellow', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'],
             ['label' => 'Open Crisis Reports',    'value' => $crisisReports,         'color' => 'red',    'icon' => 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'],
         ];
-        $colorMap = ['blue' => 'bg-blue-500/20 text-blue-400', 'green' => 'bg-green-500/20 text-green-400', 'yellow' => 'bg-yellow-500/20 text-yellow-400', 'red' => 'bg-red-500/20 text-red-400'];
+        $colorMap = ['blue' => 'bg-blue-100 text-blue-700', 'green' => 'bg-green-100 text-green-700', 'yellow' => 'bg-yellow-100 text-yellow-700', 'red' => 'bg-red-100 text-red-700'];
         @endphp
         @foreach($cards as $card)
-        <div class="bg-gray-800 border border-gray-700 rounded-xl p-5 flex items-center gap-4">
+        <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl {{ $colorMap[$card['color']] }} flex items-center justify-center flex-shrink-0">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $card['icon'] }}"/>
                 </svg>
             </div>
             <div>
-                <p class="text-2xl font-bold text-white">{{ number_format($card['value']) }}</p>
-                <p class="text-gray-400 text-sm">{{ $card['label'] }}</p>
+                <p class="text-2xl font-bold text-gray-900">{{ number_format($card['value']) }}</p>
+                <p class="text-gray-500 text-sm">{{ $card['label'] }}</p>
             </div>
         </div>
         @endforeach
@@ -39,25 +39,25 @@
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
         {{-- Registrations Chart --}}
-        <div class="xl:col-span-2 bg-gray-800 border border-gray-700 rounded-xl p-5">
-            <h3 class="text-base font-semibold text-white mb-4">New Registrations — Last 7 Days</h3>
+        <div class="xl:col-span-2 bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5">
+            <h3 class="text-base font-semibold text-gray-900 mb-4">New Registrations — Last 7 Days</h3>
             <canvas id="registrationsChart" height="120"></canvas>
         </div>
 
         {{-- Recent Crisis Reports --}}
-        <div class="bg-gray-800 border border-gray-700 rounded-xl p-5">
+        <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-base font-semibold text-white">Recent Crisis Reports</h3>
-                <a href="{{ route('admin.crisis.index') }}" class="text-purple-400 text-xs hover:text-purple-300">View all →</a>
+                <h3 class="text-base font-semibold text-gray-900">Recent Crisis Reports</h3>
+                <a href="{{ route('admin.crisis.index') }}" class="text-green-600 text-xs hover:text-green-700">View all →</a>
             </div>
             @forelse($recentCrisisReports as $report)
-            <div class="py-3 border-b border-gray-700 last:border-0">
+            <div class="py-3 border-b border-gray-200 last:border-0">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-white">{{ $report->user->display_name ?? 'Unknown' }}</p>
-                        <p class="text-xs text-gray-400 mt-0.5 line-clamp-1">{{ $report->description }}</p>
+                        <p class="text-sm font-medium text-gray-900">{{ $report->user->display_name ?? 'Unknown' }}</p>
+                        <p class="text-xs text-gray-500 mt-0.5 line-clamp-1">{{ $report->description }}</p>
                     </div>
-                    <span class="{{ $report->status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' : ($report->status === 'responding' ? 'bg-blue-500/20 text-blue-400' : 'bg-green-500/20 text-green-400') }} text-xs px-2 py-0.5 rounded-full capitalize ml-2 flex-shrink-0">
+                    <span class="{{ $report->status === 'pending' ? 'bg-yellow-100 text-yellow-700' : ($report->status === 'responding' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700') }} text-xs px-2 py-0.5 rounded-full capitalize ml-2 flex-shrink-0">
                         {{ $report->status }}
                     </span>
                 </div>
@@ -70,15 +70,15 @@
     </div>
 
     {{-- Recent Doctor Applications --}}
-    <div class="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-700">
-            <h3 class="text-base font-semibold text-white">Recent Doctor Applications</h3>
-            <a href="{{ route('admin.doctor-applications.index') }}" class="text-purple-400 text-xs hover:text-purple-300">View all →</a>
+    <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+            <h3 class="text-base font-semibold text-gray-900">Recent Doctor Applications</h3>
+            <a href="{{ route('admin.doctor-applications.index') }}" class="text-green-600 text-xs hover:text-green-700">View all →</a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>
-                    <tr class="border-b border-gray-700 text-gray-400 text-xs uppercase tracking-wider">
+                    <tr class="border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wider">
                         <th class="text-left px-5 py-3">Applicant</th>
                         <th class="text-left px-5 py-3">Email</th>
                         <th class="text-left px-5 py-3">Submitted</th>
@@ -88,17 +88,17 @@
                 </thead>
                 <tbody>
                     @forelse($recentApplications as $app)
-                    <tr class="border-b border-gray-700/50 hover:bg-gray-700/30 transition-colors">
-                        <td class="px-5 py-3 text-white font-medium">{{ $app->user->display_name ?? 'Unknown' }}</td>
-                        <td class="px-5 py-3 text-gray-400">{{ $app->user->email ?? '—' }}</td>
-                        <td class="px-5 py-3 text-gray-400">{{ $app->created_at->format('M d, Y') }}</td>
+                    <tr class="border-b border-gray-200/50 hover:bg-gray-50 transition-colors">
+                        <td class="px-5 py-3 text-gray-900 font-medium">{{ $app->user->display_name ?? 'Unknown' }}</td>
+                        <td class="px-5 py-3 text-gray-500">{{ $app->user->email ?? '—' }}</td>
+                        <td class="px-5 py-3 text-gray-500">{{ $app->created_at->format('M d, Y') }}</td>
                         <td class="px-5 py-3">
-                            <span class="{{ $app->status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' : ($app->status === 'approved' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400') }} text-xs px-2.5 py-1 rounded-full capitalize">
+                            <span class="{{ $app->status === 'pending' ? 'bg-yellow-100 text-yellow-700' : ($app->status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700') }} text-xs px-2.5 py-1 rounded-full capitalize">
                                 {{ $app->status }}
                             </span>
                         </td>
                         <td class="px-5 py-3 text-right">
-                            <a href="{{ route('admin.doctor-applications.show', $app) }}" class="text-purple-400 hover:text-purple-300 text-xs transition-colors">View →</a>
+                            <a href="{{ route('admin.doctor-applications.show', $app) }}" class="text-green-600 hover:text-green-700 text-xs transition-colors">View →</a>
                         </td>
                     </tr>
                     @empty
@@ -122,8 +122,8 @@ new Chart(ctx, {
         datasets: [{
             label: 'New Registrations',
             data: chartData.map(d => d.count),
-            backgroundColor: 'rgba(124, 58, 237, 0.6)',
-            borderColor: 'rgba(124, 58, 237, 1)',
+            backgroundColor: '#16a34a',
+            borderColor: '#16a34a',
             borderWidth: 2,
             borderRadius: 6,
         }]

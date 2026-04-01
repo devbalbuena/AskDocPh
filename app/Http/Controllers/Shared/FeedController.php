@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Shared;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Models\PostBookmark;
+use App\Models\PostComment;
 use App\Models\PostLike;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -16,17 +17,17 @@ class FeedController extends Controller
     /** GET /feed — paginated posts for the feed */
     public function index(): View
     {
-        $posts = Post::with([
-            'user',
-            'media',
-            'likes',
-            'comments.user',
-            'moodTags.moodTag',
-        ])
-        ->latest()
-        ->paginate(15);
+        $posts = Post::with(['user', 'likes', 'comments', 'media', 'moodTags.moodTag'])
+            ->latest()
+            ->paginate(10);
 
-        return view('shared.feed.index', compact('posts'));
+        $layout = match(auth()->user()->role) {
+            'doctor' => 'layouts.doctor',
+            'admin'  => 'layouts.admin',
+            default  => 'layouts.patient',
+        };
+
+        return view('shared.feed.index', compact('posts', 'layout'));
     }
 
     /** POST /posts — create a new post (returns JSON for Axios) */
@@ -66,6 +67,32 @@ class FeedController extends Controller
         return response()->json([
             'success' => true,
             'post'    => $post,
+        ]);
+    }
+
+    /** POST /posts/{post}/comments — add a comment (Axios) */
+    public function comment(Request $request, Post $post): JsonResponse
+    {
+        $request->validate([
+            'comment_text' => ['required', 'string', 'max:500'],
+        ]);
+
+        $comment = PostComment::create([
+            'post_id'           => $post->id,
+            'user_id'           => auth()->id(),
+            'comment_text'      => $request->comment_text,
+            'parent_comment_id' => null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'comment' => [
+                'id'         => $comment->id,
+                'text'       => $comment->comment_text,
+                'author'     => auth()->user()->fname . ' ' . auth()->user()->lname,
+                'username'   => auth()->user()->username,
+                'created_at' => $comment->created_at->diffForHumans(),
+            ],
         ]);
     }
 

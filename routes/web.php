@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\FollowController;
+use App\Http\Controllers\PublicProfileController;
 use App\Http\Controllers\Shared\FeedController;
 use App\Http\Controllers\Shared\NotificationController;
 use App\Http\Controllers\Patient\PatientDashboardController;
@@ -24,12 +27,15 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// ─── Profile (Breeze built-in) ────────────────────────────────────────────────
+// ─── Profile ────────────────────────────────────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo');
+    // Breeze compatibility alias so existing sidebar links still work
+    Route::get('/profile/edit', [ProfileController::class, 'show'])->name('profile.edit');
 });
+
 
 // ─── Shared Authenticated Routes ──────────────────────────────────────────────
 Route::middleware(['auth'])->group(function () {
@@ -38,11 +44,25 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/posts', [FeedController::class, 'store'])->name('posts.store');
     Route::delete('/posts/{post}', [FeedController::class, 'destroy'])->name('posts.destroy');
     Route::post('/posts/{post}/like', [FeedController::class, 'toggleLike'])->name('posts.like');
+    Route::post('/posts/{post}/comments', [FeedController::class, 'comment'])->name('posts.comment');
+
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.count');
+
+    // Resources (shared between patient, doctor, admin)
+    Route::get('/resources', [ResourceController::class, 'index'])->name('resources.index');
+    Route::get('/resources/{resource}', [ResourceController::class, 'show'])->name('resources.show');
+
+    // Public user profiles
+    Route::get('/users/{username}', [PublicProfileController::class, 'show'])->name('users.profile');
+
+    // Follow / Unfollow
+    Route::post('/users/{user}/follow', [FollowController::class, 'toggle'])->name('users.follow');
+    Route::get('/users/{user}/followers', [FollowController::class, 'followers'])->name('users.followers');
+    Route::get('/users/{user}/following', [FollowController::class, 'following'])->name('users.following');
 });
 
 // ─── Patient Routes ───────────────────────────────────────────────────────────
@@ -94,6 +114,11 @@ Route::middleware(['auth', 'role:doctor'])
         Route::post('/appointments/{appointment}/notes', [AppointmentNoteController::class, 'store'])->name('appointments.notes.store');
         Route::put('/appointments/{appointment}/notes/{note}', [AppointmentNoteController::class, 'update'])->name('appointments.notes.update');
         Route::get('/appointments/{appointment}/notes/{note}', [AppointmentNoteController::class, 'show'])->name('appointments.notes.show');
+
+        // Resources (doctor can create and delete their own)
+        Route::get('/resources/create', [ResourceController::class, 'create'])->name('resources.create');
+        Route::post('/resources', [ResourceController::class, 'store'])->name('resources.store');
+        Route::delete('/resources/{resource}', [ResourceController::class, 'destroy'])->name('resources.destroy');
     });
 
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
@@ -115,6 +140,9 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/crisis-reports', [AdminCrisisReportController::class, 'index'])->name('crisis.index');
         Route::post('/crisis-reports/{report}/respond', [AdminCrisisReportController::class, 'respond'])->name('crisis.respond');
         Route::post('/crisis-reports/{report}/resolve', [AdminCrisisReportController::class, 'resolve'])->name('crisis.resolve');
+
+        // Feed
+        Route::get('/feed', [\App\Http\Controllers\Admin\AdminFeedController::class, 'index'])->name('feed');
 
         // Affirmations
         Route::resource('/affirmations', AdminAffirmationController::class);

@@ -1,15 +1,15 @@
 {{-- Single Post Card Partial --}}
-<div class="bg-gray-800 border border-gray-700 rounded-2xl overflow-hidden" id="post-{{ $post->id }}">
+<div class="bg-white border border-gray-200 rounded-2xl overflow-hidden" id="post-{{ $post->id }}">
 
     {{-- Post Header --}}
     <div class="flex items-start justify-between px-5 pt-4 pb-3">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-purple-600/30 flex items-center justify-center text-sm font-bold text-purple-300 flex-shrink-0">
+            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-sm font-bold text-green-700 flex-shrink-0">
                 {{ strtoupper(substr($post->user->fname ?? '?', 0, 1)) }}
             </div>
             <div>
-                <p class="text-white text-sm font-semibold">{{ $post->user->display_name ?? 'Unknown' }}</p>
-                <p class="text-gray-500 text-xs">@{{ $post->user->username ?? '' }} • {{ $post->created_at->diffForHumans() }}</p>
+                <p class="text-gray-900 text-sm font-semibold">{{ $post->user->display_name ?? 'Unknown' }}</p>
+                <p class="text-gray-500 text-xs">{{ $post->user->username ?? '' }} • {{ $post->created_at->diffForHumans() }}</p>
             </div>
         </div>
         @if(auth()->id() === $post->user_id)
@@ -35,7 +35,7 @@
     {{-- Text Content --}}
     @if($post->text_content)
     <div class="px-5 pb-3">
-        <p class="text-gray-200 text-sm leading-relaxed">{{ $post->text_content }}</p>
+        <p class="text-gray-700 text-sm leading-relaxed">{{ $post->text_content }}</p>
     </div>
     @endif
 
@@ -56,16 +56,16 @@
 
     {{-- Link Preview --}}
     @if($post->link_url)
-    <div class="mx-5 mb-3 bg-gray-900/60 border border-gray-700 rounded-xl px-4 py-3">
-        <a href="{{ $post->link_url }}" target="_blank" class="text-purple-400 hover:text-purple-300 text-xs break-all transition-colors">{{ $post->link_url }}</a>
+    <div class="mx-5 mb-3 bg-gray-50/60 border border-gray-200 rounded-xl px-4 py-3">
+        <a href="{{ $post->link_url }}" target="_blank" class="text-green-600 hover:text-green-700 text-xs break-all transition-colors">{{ $post->link_url }}</a>
     </div>
     @endif
 
     {{-- Action Bar --}}
-    <div class="flex items-center gap-1 px-5 py-3 border-t border-gray-700">
+    <div class="flex items-center gap-1 px-5 py-3 border-t border-gray-200">
         {{-- Like --}}
         <button onclick="toggleLike({{ $post->id }}, this)"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg {{ $post->likes->where('user_id', auth()->id())->isNotEmpty() ? 'text-red-400' : 'text-gray-400' }} hover:bg-gray-700 transition-colors text-xs font-medium">
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg {{ $post->likes->where('user_id', auth()->id())->isNotEmpty() ? 'text-red-400' : 'text-gray-500' }} hover:bg-gray-700 transition-colors text-xs font-medium">
             <svg class="w-4 h-4" fill="{{ $post->likes->where('user_id', auth()->id())->isNotEmpty() ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
             </svg>
@@ -74,7 +74,7 @@
 
         {{-- Comment --}}
         <button onclick="toggleComments({{ $post->id }})"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700 transition-colors text-xs font-medium">
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-700 transition-colors text-xs font-medium">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
             {{ $post->allComments->count() }}
         </button>
@@ -82,7 +82,7 @@
         {{-- Bookmark --}}
         @if(auth()->user()->role === 'patient')
         <button onclick="toggleBookmark({{ $post->id }}, this)"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg ml-auto {{ $post->bookmarks->where('user_id', auth()->id())->isNotEmpty() ? 'text-yellow-400' : 'text-gray-400' }} hover:bg-gray-700 transition-colors text-xs font-medium">
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg ml-auto {{ $post->bookmarks->where('user_id', auth()->id())->isNotEmpty() ? 'text-yellow-400' : 'text-gray-500' }} hover:bg-gray-700 transition-colors text-xs font-medium">
             <svg class="w-4 h-4" fill="{{ $post->bookmarks->where('user_id', auth()->id())->isNotEmpty() ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
             </svg>
@@ -91,15 +91,15 @@
     </div>
 
     {{-- Comments Section --}}
-    <div id="comments-{{ $post->id }}" class="hidden border-t border-gray-700 px-5 py-4 space-y-3 bg-gray-900/30">
+    <div id="comments-{{ $post->id }}" class="hidden border-t border-gray-200 px-5 py-4 space-y-3 bg-gray-50/30">
         @foreach($post->comments as $comment)
         <div class="flex items-start gap-2">
-            <div class="w-7 h-7 rounded-full bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-300 flex-shrink-0">
+            <div class="w-7 h-7 rounded-full bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-700 flex-shrink-0">
                 {{ strtoupper(substr($comment->user->fname ?? '?', 0, 1)) }}
             </div>
-            <div class="flex-1 bg-gray-800 rounded-xl px-3 py-2">
-                <p class="text-xs font-medium text-white">{{ $comment->user->display_name ?? 'Unknown' }}</p>
-                <p class="text-gray-300 text-xs mt-0.5">{{ $comment->comment_text }}</p>
+            <div class="flex-1 bg-white rounded-xl px-3 py-2">
+                <p class="text-xs font-medium text-gray-900">{{ $comment->user->display_name ?? 'Unknown' }}</p>
+                <p class="text-gray-700 text-xs mt-0.5">{{ $comment->comment_text }}</p>
             </div>
         </div>
         @endforeach

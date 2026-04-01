@@ -22,7 +22,13 @@ class NotificationController extends Controller
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
-        return view('shared.notifications.index', compact('notifications'));
+        $layout = match(auth()->user()->role) {
+            'doctor' => 'layouts.doctor',
+            'admin'  => 'layouts.admin',
+            default  => 'layouts.patient',
+        };
+
+        return view('shared.notifications.index', compact('notifications', 'layout'));
     }
 
     /** POST /notifications/{id}/read — mark a single notification as read (Axios) */

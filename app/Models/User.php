@@ -94,6 +94,26 @@ class User extends Authenticatable
         return $this->hasMany(UserFollow::class, 'following_id');
     }
 
+    /** Check whether the currently authenticated user is following this user */
+    public function isFollowing(User $user): bool
+    {
+        return $this->following()
+            ->where('following_id', $user->id)
+            ->exists();
+    }
+
+    /** Total number of followers this user has */
+    public function followersCount(): int
+    {
+        return $this->followers()->count();
+    }
+
+    /** Total number of users this user is following */
+    public function followingCount(): int
+    {
+        return $this->following()->count();
+    }
+
     public function bookmarks(): HasMany
     {
         return $this->hasMany(PostBookmark::class);

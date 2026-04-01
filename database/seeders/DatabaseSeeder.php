@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\DoctorApplication;
 
 class DatabaseSeeder extends Seeder
 {
@@ -31,7 +32,7 @@ class DatabaseSeeder extends Seeder
         );
 
         // Seed an approved doctor user for testing
-        User::updateOrCreate(
+        $doctor = User::updateOrCreate(
             ['email' => 'doctor@askdocph.com'],
             [
                 'password' => Hash::make('Doctor@1234'),
@@ -43,5 +44,20 @@ class DatabaseSeeder extends Seeder
                 'doctor_status' => 'approved',
             ]
         );
+
+        // Seed a DoctorApplication record for the test doctor
+        // so that /admin/doctor-applications shows at least one record
+        if ($doctor) {
+            DoctorApplication::updateOrCreate(
+                ['user_id' => $doctor->id],
+                [
+                    'status'       => 'approved',
+                    'submitted_at' => now()->subDays(7),
+                    'reviewed_at'  => now()->subDays(3),
+                    'admin_notes'  => 'Seeded test doctor — approved automatically.',
+                ]
+            );
+        }
     }
 }
+

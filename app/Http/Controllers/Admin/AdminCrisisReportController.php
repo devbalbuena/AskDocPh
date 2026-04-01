@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CrisisReport;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -15,7 +15,7 @@ class AdminCrisisReportController extends Controller
     {
         $status = $request->query('status', 'all');
 
-        $reports = CrisisReport::with('user')
+        $reports = CrisisReport::with(['user', 'respondedBy'])
             ->when($status !== 'all', fn($q) => $q->where('status', $status))
             ->latest()
             ->paginate(20)
@@ -24,8 +24,8 @@ class AdminCrisisReportController extends Controller
         return view('admin.crisis-reports.index', compact('reports', 'status'));
     }
 
-    /** POST /admin/crisis-reports/{report}/respond */
-    public function respond(CrisisReport $report): RedirectResponse
+    /** POST /admin/crisis-reports/{report}/respond — returns JSON for Axios */
+    public function respond(CrisisReport $report): JsonResponse
     {
         $report->update([
             'status'       => 'responding',
@@ -33,19 +33,17 @@ class AdminCrisisReportController extends Controller
             'responded_at' => now(),
         ]);
 
-        return redirect()->route('admin.crisis.index')
-            ->with('success', 'Marked as responding.');
+        return response()->json(['success' => true, 'status' => 'responding']);
     }
 
-    /** POST /admin/crisis-reports/{report}/resolve */
-    public function resolve(CrisisReport $report): RedirectResponse
+    /** POST /admin/crisis-reports/{report}/resolve — returns JSON for Axios */
+    public function resolve(CrisisReport $report): JsonResponse
     {
         $report->update([
             'status'      => 'resolved',
             'resolved_at' => now(),
         ]);
 
-        return redirect()->route('admin.crisis.index')
-            ->with('success', 'Crisis report resolved.');
+        return response()->json(['success' => true, 'status' => 'resolved']);
     }
 }
