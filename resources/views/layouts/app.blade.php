@@ -1,36 +1,159 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="description" content="AskDocPH — Mental Health Support Platform">
+    <title>@yield('title', 'AskDocPH') — Mental Health Support</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    @stack('head')
+</head>
+<body class="h-full bg-gray-900 text-white font-['Inter'] antialiased">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+<div class="flex h-screen overflow-hidden">
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
-            @include('layouts.navigation')
-
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
-
-            <!-- Page Content -->
-            <main>
-                {{ $slot }}
-            </main>
+    {{-- ── Sidebar ──────────────────────────────────────── --}}
+    <aside class="w-64 bg-gray-950 border-r border-gray-800 flex flex-col flex-shrink-0">
+        {{-- Logo --}}
+        <div class="flex items-center px-6 py-5 border-b border-gray-800">
+            <a href="{{ url('/') }}">
+                <img src="{{ asset('img/logo.png') }}" alt="AskDocPH" class="h-9 w-auto">
+            </a>
         </div>
-    </body>
+
+        {{-- Navigation --}}
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            @yield('sidebar-links')
+        </nav>
+
+        {{-- User info at bottom --}}
+        @auth
+        <div class="border-t border-gray-800 p-4">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-purple-600 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                    {{ strtoupper(substr(auth()->user()->fname, 0, 1)) }}{{ strtoupper(substr(auth()->user()->lname, 0, 1)) }}
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-sm font-medium text-white truncate">{{ auth()->user()->display_name }}</p>
+                    <p class="text-xs text-gray-400 truncate capitalize">{{ auth()->user()->role }}</p>
+                </div>
+            </div>
+        </div>
+        @endauth
+    </aside>
+
+    {{-- ── Main Content ─────────────────────────────────── --}}
+    <div class="flex-1 flex flex-col overflow-hidden">
+
+        {{-- Top Navbar --}}
+        <header class="h-16 bg-gray-950 border-b border-gray-800 flex items-center justify-between px-6 flex-shrink-0">
+            <h2 class="text-lg font-semibold text-white">@yield('page-title', 'Dashboard')</h2>
+
+            <div class="flex items-center gap-4">
+                {{-- Search --}}
+                <div class="hidden md:flex items-center bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 gap-2 w-56">
+                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+                    </svg>
+                    <input type="text" placeholder="Search..." class="bg-transparent text-sm text-white placeholder-gray-400 focus:outline-none w-full">
+                </div>
+
+                {{-- Notification Bell --}}
+                @auth
+                <a href="{{ route('notifications.index') }}" class="relative p-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    <span id="notif-badge" class="absolute -top-0.5 -right-0.5 bg-purple-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
+                </a>
+
+                {{-- User Dropdown --}}
+                <div class="relative" id="user-dropdown-wrapper">
+                    <button onclick="document.getElementById('user-menu').classList.toggle('hidden')" class="flex items-center gap-2 p-1 rounded-lg hover:bg-gray-800 transition-colors">
+                        <div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-xs font-bold">
+                            {{ strtoupper(substr(auth()->user()->fname, 0, 1)) }}{{ strtoupper(substr(auth()->user()->lname, 0, 1)) }}
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-xl shadow-xl py-1 z-50">
+                        <p class="px-4 py-2 text-xs text-gray-400 border-b border-gray-700 truncate">{{ auth()->user()->email }}</p>
+                        <a href="{{ route('profile.edit') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            My Profile
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-gray-700 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                                Log Out
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                @endauth
+            </div>
+        </header>
+
+        {{-- Flash Messages --}}
+        @if(session('success'))
+        <div id="flash-msg" class="mx-6 mt-4 flex items-center gap-3 bg-green-500/10 border border-green-500/30 text-green-400 rounded-xl px-4 py-3 text-sm">
+            <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            {{ session('success') }}
+        </div>
+        @endif
+        @if(session('error'))
+        <div class="mx-6 mt-4 flex items-center gap-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl px-4 py-3 text-sm">
+            <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+            {{ session('error') }}
+        </div>
+        @endif
+
+        {{-- Page Content --}}
+        <main class="flex-1 overflow-y-auto p-6">
+            @yield('content')
+        </main>
+    </div>
+</div>
+
+{{-- Close dropdown on outside click --}}
+<script>
+document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('user-dropdown-wrapper');
+    if (wrapper && !wrapper.contains(e.target)) {
+        document.getElementById('user-menu')?.classList.add('hidden');
+    }
+});
+
+@auth
+// Notification badge polling every 30s
+function pollNotifications() {
+    axios.get('{{ route("notifications.count") }}')
+        .then(res => {
+            const badge = document.getElementById('notif-badge');
+            if (badge) {
+                if (res.data.count > 0) {
+                    badge.textContent = res.data.count > 99 ? '99+' : res.data.count;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+        }).catch(() => {});
+}
+pollNotifications();
+setInterval(pollNotifications, 30000);
+
+// Auto-hide flash
+const flash = document.getElementById('flash-msg');
+if (flash) setTimeout(() => flash.style.opacity = '0', 3500);
+@endauth
+</script>
+
+@stack('scripts')
+</body>
 </html>
