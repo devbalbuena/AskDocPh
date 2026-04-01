@@ -33,7 +33,9 @@
                 <div class="flex flex-wrap gap-2">
                     @foreach($slots as $slot)
                     <button type="button"
-                        onclick="selectSlot('{{ $slot->id }}', '{{ $day }}', '{{ substr($slot->start_time, 0, 5) }}', '{{ substr($slot->end_time, 0, 5) }}')"
+                        data-start="{{ $slot->start_time }}"
+                        data-end="{{ $slot->end_time }}"
+                        data-schedule-id="{{ $slot->id }}"
                         id="slot-{{ $slot->id }}"
                         class="slot-btn px-3 py-1.5 rounded-lg border border-gray-600 text-gray-300 text-xs hover:border-purple-500 hover:text-purple-400 transition-all">
                         {{ substr($slot->start_time, 0, 5) }} – {{ substr($slot->end_time, 0, 5) }}
@@ -51,10 +53,10 @@
         @csrf
         <h3 class="text-base font-semibold text-white">Booking Details</h3>
 
+        <input type="hidden" name="start_time" id="start_time">
+        <input type="hidden" name="end_time" id="end_time">
+        <input type="hidden" name="schedule_id" id="schedule_id">
         <input type="hidden" name="doctor_id" value="{{ $doctor->id }}">
-        <input type="hidden" name="schedule_id" id="selected_schedule_id" value="">
-        <input type="hidden" name="start_time" id="selected_start" value="">
-        <input type="hidden" name="end_time" id="selected_end" value="">
 
         <div id="selected-slot-display" class="hidden bg-purple-600/10 border border-purple-500/30 rounded-lg px-4 py-2.5 text-purple-300 text-sm"></div>
 
@@ -96,21 +98,26 @@
 
 @push('scripts')
 <script>
-function selectSlot(id, day, start, end) {
-    document.querySelectorAll('.slot-btn').forEach(b => {
-        b.classList.remove('border-purple-500', 'text-purple-400', 'bg-purple-600/10');
+document.querySelectorAll('.slot-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.getElementById('start_time').value = this.dataset.start;
+        document.getElementById('end_time').value = this.dataset.end;
+        document.getElementById('schedule_id').value = this.dataset.scheduleId;
+        
+        document.querySelectorAll('.slot-btn').forEach(b => {
+             b.classList.remove('bg-purple-600', 'text-white');
+             b.classList.add('text-gray-300');
+        });
+        
+        this.classList.remove('text-gray-300');
+        this.classList.add('bg-purple-600', 'text-white');
+        
+        document.getElementById('submit-btn').disabled = false;
+        
+        const display = document.getElementById('selected-slot-display');
+        display.textContent = `Selected: ${this.dataset.start} - ${this.dataset.end}`;
+        display.classList.remove('hidden');
     });
-    const btn = document.getElementById('slot-' + id);
-    btn.classList.add('border-purple-500', 'text-purple-400', 'bg-purple-600/10');
-
-    document.getElementById('selected_schedule_id').value = id;
-    document.getElementById('selected_start').value = start + ':00';
-    document.getElementById('selected_end').value = end + ':00';
-
-    const display = document.getElementById('selected-slot-display');
-    display.textContent = `Selected: ${day.charAt(0).toUpperCase() + day.slice(1)} ${start} – ${end}`;
-    display.classList.remove('hidden');
-    document.getElementById('submit-btn').disabled = false;
-}
+});
 </script>
 @endpush

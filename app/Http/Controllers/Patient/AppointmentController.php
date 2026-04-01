@@ -42,13 +42,13 @@ class AppointmentController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'doctor_id'        => ['required', 'exists:users,id'],
-            'schedule_id'      => ['required', 'exists:doctor_schedules,id'],
-            'appointment_date' => ['required', 'date', 'after_or_equal:today'],
-            'start_time'       => ['required', 'date_format:H:i'],
-            'end_time'         => ['required', 'date_format:H:i', 'after:start_time'],
-            'type'             => ['required', 'in:online,in_person'],
-            'reason'           => ['required', 'string', 'max:1000'],
+            'start_time' => 'required|date_format:H:i,H:i:s',
+            'end_time' => 'required|date_format:H:i,H:i:s',
+            'reason' => 'required|string|min:10|max:500',
+            'appointment_date' => 'required|date|after:today',
+            'doctor_id' => 'required|exists:users,id',
+            'schedule_id' => 'required|exists:doctor_schedules,id',
+            'type' => 'required|in:online,in_person',
         ]);
 
         // Prevent double-booking same slot
@@ -75,7 +75,7 @@ class AppointmentController extends Controller
         ]);
 
         return redirect()->route('patient.appointments.index')
-            ->with('success', 'Appointment booked successfully! Waiting for doctor confirmation.');
+            ->with('success', 'Appointment booked successfully!');
     }
 
     /** GET /patient/appointments/{appointment} — appointment detail */
