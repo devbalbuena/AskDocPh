@@ -6,7 +6,7 @@
 <div class="space-y-5">
     {{-- Search & Filter --}}
     <form method="GET" action="{{ route('admin.users.index') }}" class="flex flex-wrap gap-3">
-        <input type="text" name="search" value="{{ $search }}" placeholder="Search by name, email, username..."
+        <input type="text" name="search" value="{{ $search }}" placeholder="Search users by name, email or username..."
                class="bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:border-green-500 w-72">
         <select name="role" class="bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500">
             <option value="">All Roles</option>
@@ -35,32 +35,50 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($users as $user)
-                    <tr class="border-b border-gray-200/50 hover:bg-gray-700/20 transition-colors">
+                    @forelse($users as $member)
+                    <tr class="border-b border-gray-200/50 hover:bg-gray-50 transition-colors">
                         <td class="px-5 py-3">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-xs font-bold text-green-700">
-                                    {{ strtoupper(substr($user->fname, 0, 1)) }}
+                                    {{ strtoupper(substr($member->fname, 0, 1)) }}
                                 </div>
                                 <div>
-                                    <p class="text-gray-900 font-medium">{{ $user->display_name }}</p>
-                                    <p class="text-gray-500 text-xs">@{{ $user->username }}</p>
+                                    <p class="text-gray-900 font-medium">{{ $member->display_name }}</p>
+                                    <p class="text-gray-500 text-xs">&commat;{{ $member->username }}</p>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-5 py-3 text-gray-500">{{ $user->email }}</td>
+                        <td class="px-5 py-3 text-gray-500">{{ $member->email }}</td>
                         <td class="px-5 py-3">
-                            <span class="{{ $user->role === 'doctor' ? 'bg-blue-100 text-blue-700' : ($user->role === 'admin' ? 'bg-green-100 text-green-600' : 'bg-gray-600/40 text-gray-700') }} text-xs px-2.5 py-1 rounded-full capitalize">{{ $user->role }}</span>
+                            <span class="{{ $member->role === 'doctor' ? 'bg-blue-100 text-blue-700' : ($member->role === 'admin' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600') }} text-xs px-2.5 py-1 rounded-full capitalize">{{ $member->role }}</span>
                         </td>
-                        <td class="px-5 py-3 text-gray-500 text-xs">{{ $user->doctor_status !== 'none' ? ucfirst($user->doctor_status) : '—' }}</td>
-                        <td class="px-5 py-3 text-gray-500 text-xs">{{ $user->created_at->format('M d, Y') }}</td>
+                        <td class="px-5 py-3">
+                            @if($member->trashed())
+                                <span class="bg-red-100 text-red-700 text-xs px-2.5 py-1 rounded-full">Inactive</span>
+                            @elseif($member->role === 'doctor')
+                                @php
+                                    $dsColor = match($member->doctor_status) {
+                                        'approved'  => 'bg-green-100 text-green-700',
+                                        'pending'   => 'bg-yellow-100 text-yellow-700',
+                                        'rejected'  => 'bg-red-100 text-red-700',
+                                        default     => 'bg-gray-100 text-gray-600',
+                                    };
+                                @endphp
+                                <span class="{{ $dsColor }} text-xs px-2.5 py-1 rounded-full capitalize">{{ ucfirst($member->doctor_status) }}</span>
+                            @else
+                                <span class="bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded-full">Active</span>
+                            @endif
+                        </td>
+                        <td class="px-5 py-3 text-gray-500 text-xs">{{ $member->created_at->format('M d, Y') }}</td>
                         <td class="px-5 py-3 text-right">
                             <div class="flex items-center justify-end gap-2">
-                                <a href="{{ route('admin.users.show', $user) }}" class="text-green-600 hover:text-green-700 text-xs transition-colors">View</a>
-                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('Deactivate {{ $user->display_name }}?')">
+                                <a href="{{ route('admin.users.show', $member) }}" class="text-green-600 hover:text-green-700 text-xs transition-colors">View</a>
+                                @if($member->id !== auth()->id() && !$member->trashed())
+                                <form method="POST" action="{{ route('admin.users.destroy', $member) }}" onsubmit="return confirm('Deactivate {{ $member->display_name }}?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="text-red-400 hover:text-red-300 text-xs transition-colors">Deactivate</button>
                                 </form>
+                                @endif
                             </div>
                         </td>
                     </tr>

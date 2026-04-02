@@ -9,7 +9,7 @@
     <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
 
         {{-- Cover Photo Banner --}}
-        <div class="relative h-40 bg-green-800 overflow-hidden">
+        <div class="relative w-full h-48 bg-green-800 overflow-hidden">
             @if($user->cover_photo)
                 <img src="{{ Storage::url($user->cover_photo) }}"
                      alt="Cover Photo"
@@ -45,7 +45,7 @@
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <h1 class="text-xl font-bold text-gray-900">{{ $user->display_name }}</h1>
-                        <p class="text-sm text-gray-500">@{{ $user->username }}</p>
+                        <p class="text-sm text-gray-500">&commat;{{ $user->username }}</p>
                         @if($user->bio)
                         <p class="text-sm text-gray-700 mt-2 leading-relaxed max-w-lg">{{ $user->bio }}</p>
                         @endif
@@ -85,7 +85,7 @@
     </div>
 
     {{-- ── Edit Profile Form ────────────────────────────────────────────────── --}}
-    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-8">
         <h2 class="text-base font-semibold text-gray-900 mb-5">Edit Profile</h2>
 
         @if(session('success'))

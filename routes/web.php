@@ -45,6 +45,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/posts/{post}', [FeedController::class, 'destroy'])->name('posts.destroy');
     Route::post('/posts/{post}/like', [FeedController::class, 'toggleLike'])->name('posts.like');
     Route::post('/posts/{post}/comments', [FeedController::class, 'comment'])->name('posts.comment');
+    Route::post('/posts/{post}/report', [FeedController::class, 'report'])->name('posts.report');
 
 
     // Notifications

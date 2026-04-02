@@ -31,12 +31,19 @@
                     <span class="{{ $app->status === 'pending' ? 'bg-yellow-100 text-yellow-700' : ($app->status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700') }} text-xs px-2.5 py-1 rounded-full capitalize">{{ $app->status }}</span>
                     <p class="text-gray-500 text-xs mt-1">{{ $app->created_at->format('M d, Y') }}</p>
                 </div>
-                <a href="{{ route('admin.doctor-applications.show', $app) }}" class="bg-green-600 hover:bg-green-700 text-gray-900 text-xs px-4 py-2 rounded-lg transition-colors">Review →</a>
+                <a href="{{ route('admin.doctor-applications.show', $app) }}"
+                   class="{{ $app->status === 'pending' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-white border border-green-600 text-green-600 hover:bg-green-50' }} text-xs px-4 py-2 rounded-lg transition-colors">
+                    {{ $app->status === 'pending' ? 'Review' : 'View Details' }}
+                </a>
             </div>
         </div>
         @empty
-        <div class="col-span-full bg-white border border-gray-200 rounded-xl p-10 text-center">
-            <p class="text-gray-500 text-sm">No applications found.</p>
+        <div class="col-span-full bg-white border border-gray-200 rounded-xl p-16 text-center">
+            <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <p class="text-gray-500 font-medium">No applications found</p>
+            <p class="text-gray-400 text-sm mt-1">Check back later</p>
         </div>
         @endforelse
     </div>

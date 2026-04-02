@@ -44,11 +44,14 @@
                         <td class="px-5 py-4">
                             <span id="status-badge-{{ $report->id }}"
                                   class="{{ match($report->status) {
-                                      'pending'    => 'bg-yellow-100 text-yellow-700',
-                                      'responding' => 'bg-blue-100 text-blue-700',
+                                      'pending'    => 'bg-red-100 text-red-700 font-semibold',
+                                      'responding' => 'bg-orange-100 text-orange-700',
                                       'resolved'   => 'bg-green-100 text-green-700',
                                       default      => 'bg-gray-100 text-gray-500',
-                                  } }} text-xs px-2.5 py-1 rounded-full capitalize font-medium">
+                                  } }} inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full capitalize">
+                                @if($report->status === 'pending')
+                                <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse flex-shrink-0"></span>
+                                @endif
                                 {{ $report->status }}
                             </span>
                         </td>
@@ -57,23 +60,37 @@
                                 @if($report->status === 'pending')
                                 <button onclick="crisisAction({{ $report->id }}, 'respond')"
                                         id="respond-btn-{{ $report->id }}"
-                                        class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
-                                    Respond
+                                        class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">
+                                    Respond Now
                                 </button>
-                                @endif
-                                @if(in_array($report->status, ['pending','responding']))
+                                @elseif($report->status === 'responding')
                                 <button onclick="crisisAction({{ $report->id }}, 'resolve')"
                                         id="resolve-btn-{{ $report->id }}"
-                                        class="bg-green-600 hover:bg-green-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
-                                    Resolve
+                                        class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
+                                    Mark Resolved
                                 </button>
-                                @endif
-                                @if($report->status === 'resolved')
-                                <span class="text-xs text-gray-400 italic">Resolved</span>
+                                @elseif($report->status === 'resolved')
+                                <button onclick="openCrisisModal({{ $report->id }})"
+                                        class="bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
+                                    View Details
+                                </button>
                                 @endif
                             </div>
                         </td>
                     </tr>
+                    {{-- Embed report data as JSON for the modal --}}
+                    @if($report->status === 'resolved')
+                    <script>
+                    window.__crisisData = window.__crisisData || {};
+                    window.__crisisData[{{ $report->id }}] = {
+                        patient:      @json($report->user->display_name ?? 'Unknown'),
+                        description:  @json($report->description),
+                        respondedBy:  @json($report->respondedBy->display_name ?? '—'),
+                        respondedAt:  @json($report->responded_at?->format('M d, Y H:i') ?? '—'),
+                        resolvedAt:   @json($report->resolved_at?->format('M d, Y H:i') ?? '—'),
+                    };
+                    </script>
+                    @endif
                     @empty
                     <tr>
                         <td colspan="5" class="px-5 py-16 text-center">
@@ -95,11 +112,41 @@
         @endif
     </div>
 </div>
+
+{{-- View Details Modal --}}
+<div id="crisis-modal" class="fixed inset-0 z-50 hidden flex items-start justify-center pt-20 px-4">
+    {{-- Backdrop --}}
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeCrisisModal()"></div>
+    {{-- Panel --}}
+    <div class="relative z-10 bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+        {{-- Header --}}
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 bg-green-500 rounded-full"></span>
+                <h3 class="text-base font-semibold text-gray-900">Crisis Report Details</h3>
+            </div>
+            <button onclick="closeCrisisModal()" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors text-lg leading-none">
+                &times;
+            </button>
+        </div>
+        {{-- Body --}}
+        <div class="px-6 py-5 space-y-4" id="crisis-modal-body">
+            {{-- Populated by JS --}}
+        </div>
+        {{-- Footer --}}
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-end">
+            <button onclick="closeCrisisModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm px-4 py-2 rounded-lg transition-colors">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
 <script>
 axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+window.__crisisData = window.__crisisData || {};
 
 function crisisAction(id, action) {
     const url = `/admin/crisis-reports/${id}/${action}`;
@@ -111,24 +158,84 @@ function crisisAction(id, action) {
 
             // Update the status badge
             const badge = document.getElementById(`status-badge-${id}`);
-            badge.textContent = newStatus;
-            badge.className = 'text-xs px-2.5 py-1 rounded-full capitalize font-medium '
-                + (newStatus === 'resolved'   ? 'bg-green-100 text-green-700'
-                :  newStatus === 'responding' ? 'bg-blue-100 text-blue-700'
-                :                               'bg-yellow-100 text-yellow-700');
+            if (newStatus === 'responding') {
+                badge.className = 'inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full capitalize bg-orange-100 text-orange-700';
+                badge.textContent = 'responding';
+            } else if (newStatus === 'resolved') {
+                badge.className = 'inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full capitalize bg-green-100 text-green-700';
+                badge.textContent = 'resolved';
+            }
 
-            // Update the action buttons
+            // Update action buttons
             const actionsDiv = document.getElementById(`actions-${id}`);
             if (newStatus === 'responding') {
-                // Remove Respond button, keep Resolve
-                const respondBtn = document.getElementById(`respond-btn-${id}`);
-                if (respondBtn) respondBtn.remove();
+                actionsDiv.innerHTML = `
+                    <button onclick="crisisAction(${id}, 'resolve')"
+                            class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
+                        Mark Resolved
+                    </button>`;
             } else if (newStatus === 'resolved') {
-                // Remove all buttons, show resolved text
-                actionsDiv.innerHTML = '<span class="text-xs text-gray-400 italic">Resolved</span>';
+                actionsDiv.innerHTML = `
+                    <button onclick="openCrisisModal(${id})"
+                            class="bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
+                        View Details
+                    </button>`;
             }
         })
         .catch(err => alert(err.response?.data?.message ?? 'Action failed. Please try again.'));
 }
+
+function openCrisisModal(id) {
+    const data = window.__crisisData[id];
+    if (!data) {
+        alert('Details not available. Please refresh the page.');
+        return;
+    }
+
+    const body = document.getElementById('crisis-modal-body');
+    body.innerHTML = `
+        <div>
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Patient</p>
+            <p class="text-gray-900 font-medium">${escHtml(data.patient)}</p>
+        </div>
+        <div>
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Description</p>
+            <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">${escHtml(data.description)}</p>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Responded By</p>
+                <p class="text-gray-700 text-sm">${escHtml(data.respondedBy)}</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Responded At</p>
+                <p class="text-gray-700 text-sm">${escHtml(data.respondedAt)}</p>
+            </div>
+        </div>
+        <div>
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Resolved At</p>
+            <p class="text-gray-700 text-sm">${escHtml(data.resolvedAt)}</p>
+        </div>
+    `;
+
+    document.getElementById('crisis-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCrisisModal() {
+    document.getElementById('crisis-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function escHtml(str) {
+    const d = document.createElement('div');
+    d.appendChild(document.createTextNode(str));
+    return d.innerHTML;
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeCrisisModal();
+});
 </script>
 @endpush

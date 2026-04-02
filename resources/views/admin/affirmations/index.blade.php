@@ -103,16 +103,16 @@
                 <input type="text" id="new-author" placeholder="Optional..." value=""
                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors">
             </div>
-            <div>
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="new-published" checked class="w-4 h-4 accent-green-600">
+                <span class="text-sm text-gray-700">Publish immediately</span>
+            </label>
+            <div id="publish-at-field" style="display: none;">
                 <label class="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Publish Date</label>
                 <input type="datetime-local" id="new-publish-at"
                        value="{{ now()->format('Y-m-d\TH:i') }}"
                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500 transition-colors">
             </div>
-            <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" id="new-published" checked class="w-4 h-4 accent-green-600">
-                <span class="text-sm text-gray-700">Publish immediately</span>
-            </label>
             <button onclick="createAffirmation()"
                     class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-xl text-sm transition-colors">
                 Add Affirmation
@@ -125,6 +125,11 @@
 @push('scripts')
 <script>
 axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+// ── Publish immediately toggle ───────────────────────────────────────────────
+document.getElementById('new-published').addEventListener('change', function() {
+    document.getElementById('publish-at-field').style.display = this.checked ? 'none' : 'block';
+});
 
 // ── Create ──────────────────────────────────────────────────────
 function createAffirmation() {
@@ -184,9 +189,9 @@ function saveEdit(id) {
         .catch(err => alert(err.response?.data?.message ?? 'Update failed.'));
 }
 
-// ── Delete ─────────────────────────────────────────────────────
+// ── Delete ─────────────────────────────────────────────────────────────────
 function deleteAffirmation(id) {
-    if (!confirm('Delete this affirmation?')) return;
+    if (!confirm('Are you sure you want to delete this affirmation? This cannot be undone.')) return;
 
     axios.delete(`/admin/affirmations/${id}`)
         .then(res => {

@@ -16,7 +16,7 @@ class AdminUserController extends Controller
         $search = $request->query('search');
         $role   = $request->query('role');
 
-        $users = User::query()
+        $users = User::withTrashed()
             ->when($search, fn($q) => $q->where(function ($q) use ($search) {
                 $q->where('fname', 'like', "%{$search}%")
                   ->orWhere('lname', 'like', "%{$search}%")

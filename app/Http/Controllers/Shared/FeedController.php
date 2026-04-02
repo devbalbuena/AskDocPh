@@ -106,23 +106,51 @@ class FeedController extends Controller
         return response()->json(['success' => true]);
     }
 
-    /** POST /posts/{post}/like — toggle like (Axios) */
-    public function toggleLike(Post $post): JsonResponse
+    /** POST /posts/{post}/like — toggle/change reaction (Axios) */
+    public function toggleLike(Request $request, Post $post): JsonResponse
     {
-        $userId = auth()->id();
-        $existing = $post->likes()->where('user_id', $userId)->first();
+        $userId       = auth()->id();
+        $reactionType = $request->input('reaction_type', 'heart');
+        $existing     = $post->likes()->where('user_id', $userId)->first();
 
         if ($existing) {
-            $existing->delete();
-            $liked = false;
+            if ($existing->reaction_type === $reactionType) {
+                // Same reaction — remove it (toggle off)
+                $existing->delete();
+                $liked        = false;
+                $reactionType = null;
+            } else {
+                // Different reaction — update it
+                $existing->update(['reaction_type' => $reactionType]);
+                $liked = true;
+            }
         } else {
-            $post->likes()->create(['user_id' => $userId, 'reaction_type' => 'like']);
+            $post->likes()->create(['user_id' => $userId, 'reaction_type' => $reactionType]);
             $liked = true;
         }
 
         return response()->json([
-            'liked'      => $liked,
-            'likes_count' => $post->likes()->count(),
+            'liked'         => $liked,
+            'likes_count'   => $post->likes()->count(),
+            'reaction_type' => $reactionType,
         ]);
+    }
+
+    /** POST /posts/{post}/report — log a report (Axios) */
+    public function report(Request $request, Post $post): JsonResponse
+    {
+        $request->validate([
+            'reason'  => ['required', 'string', 'in:spam,inappropriate,misinformation,harassment,other'],
+            'details' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        \Log::info('Post reported', [
+            'post_id'     => $post->id,
+            'reported_by' => auth()->id(),
+            'reason'      => $request->reason,
+            'details'     => $request->details,
+        ]);
+
+        return response()->json(['success' => true]);
     }
 }
