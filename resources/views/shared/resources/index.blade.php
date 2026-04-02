@@ -80,9 +80,14 @@
                 </p>
 
                 <div class="flex items-center justify-between">
-                    <span class="text-xs text-gray-400">
-                        By {{ $resource->author->display_name ?? 'Unknown' }}
-                    </span>
+                    @if(optional($resource->author)->username)
+                    <a href="/users/{{ optional($resource->author)->username }}"
+                       class="text-green-600 hover:underline text-xs">
+                        Dr. {{ optional($resource->author)->fname }} {{ optional($resource->author)->lname }}
+                    </a>
+                    @else
+                    <span class="text-xs text-gray-400">Unknown author</span>
+                    @endif
                     <a href="{{ route('resources.show', $resource) }}"
                        class="bg-green-600 hover:bg-green-700 text-white text-xs font-medium px-4 py-1.5 rounded-lg transition-colors">
                         View

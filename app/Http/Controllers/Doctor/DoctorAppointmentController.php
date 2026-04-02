@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class DoctorAppointmentController extends Controller
@@ -40,12 +42,16 @@ class DoctorAppointmentController extends Controller
     }
 
     /** POST /doctor/appointments/{appointment}/confirm */
-    public function confirm(Appointment $appointment): RedirectResponse
+    public function confirm(Appointment $appointment, Request $request): JsonResponse|RedirectResponse
     {
         abort_unless($appointment->doctor_id === auth()->id(), 403);
         abort_unless($appointment->status === 'pending', 422);
 
         $appointment->update(['status' => 'confirmed']);
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'status' => 'confirmed', 'message' => 'Appointment confirmed.']);
+        }
 
         return redirect()->route('doctor.appointments.show', $appointment)
             ->with('success', 'Appointment confirmed.');
@@ -67,7 +73,7 @@ class DoctorAppointmentController extends Controller
     }
 
     /** POST /doctor/appointments/{appointment}/cancel */
-    public function cancel(Appointment $appointment, Request $request): RedirectResponse
+    public function cancel(Appointment $appointment, Request $request): JsonResponse|RedirectResponse
     {
         abort_unless($appointment->doctor_id === auth()->id(), 403);
         abort_unless(in_array($appointment->status, ['pending', 'confirmed']), 422);
@@ -78,7 +84,12 @@ class DoctorAppointmentController extends Controller
             'cancelled_at' => now(),
         ]);
 
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'status' => 'cancelled', 'message' => 'Appointment cancelled.']);
+        }
+
         return redirect()->route('doctor.appointments.index')
             ->with('success', 'Appointment cancelled.');
     }
 }
+

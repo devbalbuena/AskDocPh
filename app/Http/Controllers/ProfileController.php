@@ -29,7 +29,17 @@ class ProfileController extends Controller
         $user   = auth()->user();
         $layout = $this->layout();
 
-        return view('profile.show', compact('user', 'layout'));
+        // For doctors, decode the bio column (JSON) into structured professional fields.
+        // For all other roles, $professional is an empty array (bio is plain text).
+        $professional = [];
+        if ($user->role === 'doctor' && $user->bio) {
+            $decoded = json_decode($user->bio, true);
+            if (is_array($decoded)) {
+                $professional = $decoded;
+            }
+        }
+
+        return view('profile.show', compact('user', 'layout', 'professional'));
     }
 
     /**
@@ -39,7 +49,7 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
 
-        $validated = $request->validate([
+        $rules = [
             'fname'         => ['required', 'string', 'max:100'],
             'mname'         => ['nullable', 'string', 'max:100'],
             'lname'         => ['required', 'string', 'max:100'],
@@ -49,11 +59,20 @@ class ProfileController extends Controller
             'bday'          => ['nullable', 'date'],
             'profile_photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:5120'],
             'cover_photo'   => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:10240'],
-        ]);
+        ];
+
+        // Extra validation for doctor professional fields
+        if ($user->role === 'doctor') {
+            $rules['specialization']    = ['nullable', 'string', 'max:255'];
+            $rules['prc_license_number'] = ['nullable', 'string', 'max:100'];
+            $rules['hospital_affiliation'] = ['nullable', 'string', 'max:255'];
+            $rules['years_experience']  = ['nullable', 'integer', 'min:0', 'max:60'];
+        }
+
+        $validated = $request->validate($rules);
 
         // Handle profile photo upload
         if ($request->hasFile('profile_photo')) {
-            // Delete old file if exists
             if ($user->profile_photo) {
                 Storage::disk('public')->delete($user->profile_photo);
             }
@@ -68,6 +87,25 @@ class ProfileController extends Controller
             }
             $validated['cover_photo'] = $request->file('cover_photo')
                 ->store('profiles/covers', 'public');
+        }
+
+        // For doctors: encode professional fields as JSON into the bio column.
+        // Remove individual professional keys from $validated so they don't
+        // get written to non-existent columns, then set bio to JSON.
+        if ($user->role === 'doctor') {
+            $validated['bio'] = json_encode([
+                'specialization'    => $request->input('specialization'),
+                'prc_license'       => $request->input('prc_license_number'),
+                'hospital'          => $request->input('hospital_affiliation'),
+                'years_experience'  => $request->input('years_experience'),
+            ]);
+            // Remove doctor-only keys that aren't real columns
+            unset(
+                $validated['specialization'],
+                $validated['prc_license_number'],
+                $validated['hospital_affiliation'],
+                $validated['years_experience']
+            );
         }
 
         $user->update($validated);

@@ -3,7 +3,17 @@
 @section('page-title', 'My Profile')
 
 @section('content')
-<div class="max-w-3xl mx-auto space-y-6">
+<div class="max-w-3xl mx-auto space-y-6 pb-12">
+
+    {{-- ── Single global success flash (top of page, outside form card) ──────── --}}
+    @if(session('success'))
+    <div class="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm">
+        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        {{ session('success') }}
+    </div>
+    @endif
 
     {{-- ── Profile Header Card ──────────────────────────────────────────────── --}}
     <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
@@ -15,7 +25,6 @@
                      alt="Cover Photo"
                      class="w-full h-full object-cover">
             @else
-                {{-- Decorative gradient when no cover photo --}}
                 <div class="absolute inset-0 bg-gradient-to-br from-green-700 via-green-800 to-emerald-900">
                     <div class="absolute inset-0 opacity-20"
                          style="background-image: radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px); background-size: 30px 30px;"></div>
@@ -46,8 +55,13 @@
                     <div>
                         <h1 class="text-xl font-bold text-gray-900">{{ $user->display_name }}</h1>
                         <p class="text-sm text-gray-500">&commat;{{ $user->username }}</p>
-                        @if($user->bio)
+                        {{-- Show bio as text only for non-doctor roles (doctors store JSON in bio) --}}
+                        @if($user->role !== 'doctor' && $user->bio)
                         <p class="text-sm text-gray-700 mt-2 leading-relaxed max-w-lg">{{ $user->bio }}</p>
+                        @endif
+                        {{-- For doctors: show key professional info in the header --}}
+                        @if($user->role === 'doctor' && !empty($professional['specialization']))
+                        <p class="text-sm text-gray-500 mt-1">{{ $professional['specialization'] }}</p>
                         @endif
                     </div>
                     {{-- Role badge --}}
@@ -85,15 +99,8 @@
     </div>
 
     {{-- ── Edit Profile Form ────────────────────────────────────────────────── --}}
-    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 mb-8">
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
         <h2 class="text-base font-semibold text-gray-900 mb-5">Edit Profile</h2>
-
-        @if(session('success'))
-        <div class="mb-4 flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm">
-            <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-            {{ session('success') }}
-        </div>
-        @endif
 
         @if($errors->any())
         <div class="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
@@ -135,13 +142,15 @@
                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500 transition-colors">
             </div>
 
-            {{-- Bio --}}
+            {{-- Bio — only for patient and admin roles, hidden for doctors --}}
+            @if(auth()->user()->role !== 'doctor')
             <div>
                 <label for="bio" class="block text-xs font-medium text-gray-700 mb-1.5">Bio <span class="text-gray-400">(optional, max 500 characters)</span></label>
                 <textarea id="bio" name="bio" rows="3"
                           class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500 resize-none transition-colors"
                           placeholder="Tell others a little about you...">{{ old('bio', $user->bio) }}</textarea>
             </div>
+            @endif
 
             {{-- Gender & Birthday --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -194,8 +203,57 @@
                 </div>
             </div>
 
+            {{-- ── Doctor-only: Professional Information ────────────────────── --}}
+            @if(auth()->user()->role === 'doctor')
+            <div class="pt-4 border-t border-gray-200 space-y-4">
+                <h3 class="text-base font-semibold text-gray-900">Professional Information</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="specialization" class="block text-xs font-medium text-gray-700 mb-1.5">
+                            Specialization
+                        </label>
+                        <input type="text" id="specialization" name="specialization"
+                               value="{{ old('specialization', $professional['specialization'] ?? '') }}"
+                               placeholder="e.g. Psychiatry, Psychology"
+                               class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors">
+                    </div>
+                    <div>
+                        <label for="prc_license_number" class="block text-xs font-medium text-gray-700 mb-1.5">
+                            PRC License Number
+                        </label>
+                        <input type="text" id="prc_license_number" name="prc_license_number"
+                               value="{{ old('prc_license_number', $professional['prc_license'] ?? '') }}"
+                               placeholder="e.g. 0012345"
+                               class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="hospital_affiliation" class="block text-xs font-medium text-gray-700 mb-1.5">
+                            Hospital Affiliation
+                        </label>
+                        <input type="text" id="hospital_affiliation" name="hospital_affiliation"
+                               value="{{ old('hospital_affiliation', $professional['hospital'] ?? '') }}"
+                               placeholder="e.g. Philippine General Hospital"
+                               class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors">
+                    </div>
+                    <div>
+                        <label for="years_experience" class="block text-xs font-medium text-gray-700 mb-1.5">
+                            Years of Experience
+                        </label>
+                        <input type="number" id="years_experience" name="years_experience" min="0" max="60"
+                               value="{{ old('years_experience', $professional['years_experience'] ?? '') }}"
+                               placeholder="e.g. 5"
+                               class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors">
+                    </div>
+                </div>
+            </div>
+            @endif
+
             {{-- Submit --}}
-            <div class="pt-2 flex justify-end">
+            <div class="pt-4 flex justify-end">
                 <button type="submit"
                         class="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-8 py-2.5 rounded-xl transition-colors shadow-sm">
                     Save Changes

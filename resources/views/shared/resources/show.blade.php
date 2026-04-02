@@ -50,9 +50,14 @@
                     } }}">
                     {{ $resource->type }}
                 </span>
-                <span class="text-xs text-gray-400">
-                    By {{ $resource->author->display_name ?? 'Unknown' }}
-                </span>
+                @if(optional($resource->author)->username)
+                <a href="/users/{{ optional($resource->author)->username }}"
+                   class="text-green-600 hover:underline text-xs">
+                    Dr. {{ optional($resource->author)->fname }} {{ optional($resource->author)->lname }}
+                </a>
+                @else
+                <span class="text-xs text-gray-400">Unknown author</span>
+                @endif
                 <span class="text-xs text-gray-400">
                     {{ $resource->created_at->format('M d, Y') }}
                 </span>
@@ -63,7 +68,7 @@
 
             {{-- Doctor delete button (own resources only) --}}
             @if(auth()->user()->role === 'doctor' && auth()->id() === $resource->user_id)
-            <form method="POST" action="{{ route('resources.destroy', $resource) }}"
+            <form method="POST" action="{{ route('doctor.resources.destroy', $resource) }}"
                   class="mt-4"
                   onsubmit="return confirm('Delete this resource?')">
                 @csrf @method('DELETE')
@@ -111,17 +116,11 @@
             </div>
 
         @elseif($resource->type === 'video')
-            {{-- Video: HTML5 player or external link --}}
-            @if($resource->file_path)
-                <video controls
-                       class="w-full rounded-xl max-h-96 bg-black"
-                       src="{{ Storage::url($resource->file_path) }}">
-                    Your browser does not support the video tag.
-                </video>
-            @elseif($resource->body && $resource->body->content)
-                {{-- Could be a YouTube/Vimeo URL stored in body.content --}}
+            {{-- Video: detect if file_path is a URL (YouTube/Vimeo) or a stored file --}}
+            @if($resource->file_path && str_starts_with($resource->file_path, 'http'))
+                {{-- External video URL --}}
                 <div class="text-center py-6">
-                    <a href="{{ $resource->body->content }}"
+                    <a href="{{ $resource->file_path }}"
                        target="_blank"
                        class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-xl transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,6 +130,13 @@
                         Watch Video
                     </a>
                 </div>
+            @elseif($resource->file_path)
+                {{-- Uploaded video file --}}
+                <video controls
+                       class="w-full rounded-xl max-h-96 bg-black"
+                       src="{{ Storage::url($resource->file_path) }}">
+                    Your browser does not support the video tag.
+                </video>
             @else
                 <p class="text-gray-400 text-sm text-center py-8">Video not available.</p>
             @endif

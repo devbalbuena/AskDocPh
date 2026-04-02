@@ -63,26 +63,32 @@ class ResourceController extends Controller
             'title'       => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:2000'],
             'type'        => ['required', 'in:article,video,pdf'],
-            'file'        => ['nullable', 'file', 'max:20480'],
+            'file'        => ['nullable', 'file', 'max:102400'],
             'content'     => ['nullable', 'string'],
+            'video_url'   => ['nullable', 'url', 'max:500'],
         ]);
 
         $filePath = null;
+
         if ($request->hasFile('file')) {
+            // Store uploaded file (PDF or video) to public disk
             $filePath = $request->file('file')->store('resources', 'public');
+        } elseif ($request->filled('video_url') && $request->input('type') === 'video') {
+            // No file uploaded but a video URL was provided — store it as file_path
+            $filePath = $request->video_url;
         }
 
         $resource = HealthResource::create([
             'user_id'     => auth()->id(),
-            'title'       => $request->title,
-            'description' => $request->description,
-            'type'        => $request->type,
+            'title'       => $request->input('title'),
+            'description' => $request->input('description'),
+            'type'        => $request->input('type'),
             'file_path'   => $filePath,
         ]);
 
         ResourceBody::create([
             'resource_id' => $resource->id,
-            'content'     => $request->content ?? '',
+            'content'     => $request->input('content') ?? '',
         ]);
 
         return redirect()->route('resources.index')

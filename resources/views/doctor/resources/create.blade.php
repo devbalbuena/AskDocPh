@@ -69,8 +69,8 @@
                 <label for="content" class="block text-xs font-medium text-gray-700 mb-1.5">
                     Article Content
                 </label>
-                <textarea id="content" name="content" rows="10"
-                          placeholder="Write the full article content here..."
+                <textarea id="content" name="content" rows="12"
+                          placeholder="Write your full article here..."
                           class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 resize-y transition-colors">{{ old('content') }}</textarea>
             </div>
 
@@ -82,10 +82,30 @@
                 </label>
                 <input type="file" id="file" name="file"
                        class="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition-colors cursor-pointer">
+
+                {{-- Video URL alternative — only shown for video type --}}
+                <div id="video-url-wrapper" class="{{ old('type') === 'video' ? '' : 'hidden' }} mt-4">
+                    <div class="flex items-center gap-3 my-3">
+                        <div class="flex-1 h-px bg-gray-200"></div>
+                        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Or</span>
+                        <div class="flex-1 h-px bg-gray-200"></div>
+                    </div>
+                    <label for="video_url" class="block text-xs font-medium text-gray-700 mb-1.5">
+                        Paste a Video URL <span class="text-gray-400 font-normal">(YouTube, Vimeo, etc.)</span>
+                    </label>
+                    <input type="url" id="video_url" name="video_url" value="{{ old('video_url') }}"
+                           placeholder="https://youtube.com/watch?v=..."
+                           class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors">
+                    <p class="text-xs text-gray-400 mt-1">Leave both fields empty if not applicable.</p>
+                </div>
             </div>
 
-            {{-- Submit --}}
-            <div class="pt-2 flex justify-end">
+            {{-- Buttons: Cancel (left) + Publish (right) --}}
+            <div class="pt-2 flex items-center justify-end gap-3">
+                <a href="{{ route('resources.index') }}"
+                   class="bg-white border border-gray-300 text-gray-700 text-sm font-medium px-6 py-2.5 rounded-xl hover:bg-gray-50 transition-colors">
+                    Cancel
+                </a>
                 <button type="submit"
                         class="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-8 py-2.5 rounded-xl transition-colors shadow-sm">
                     Publish Resource
@@ -99,26 +119,28 @@
 @push('scripts')
 <script>
 function handleTypeChange(type) {
-    const contentWrapper = document.getElementById('content-wrapper');
-    const fileWrapper    = document.getElementById('file-wrapper');
-    const fileHint       = document.getElementById('file-hint');
+    const contentWrapper  = document.getElementById('content-wrapper');
+    const fileWrapper     = document.getElementById('file-wrapper');
+    const videoUrlWrapper = document.getElementById('video-url-wrapper');
+    const fileHint        = document.getElementById('file-hint');
+    const fileInput       = document.getElementById('file');
+
+    // Hide all conditional sections first
+    contentWrapper.classList.add('hidden');
+    fileWrapper.classList.add('hidden');
+    videoUrlWrapper.classList.add('hidden');
 
     if (type === 'article') {
         contentWrapper.classList.remove('hidden');
-        fileWrapper.classList.add('hidden');
     } else if (type === 'pdf') {
-        contentWrapper.classList.add('hidden');
         fileWrapper.classList.remove('hidden');
         fileHint.textContent = '(PDF only — max 20 MB)';
-        document.getElementById('file').accept = '.pdf,application/pdf';
+        fileInput.accept = '.pdf,application/pdf';
     } else if (type === 'video') {
-        contentWrapper.classList.add('hidden');
         fileWrapper.classList.remove('hidden');
+        videoUrlWrapper.classList.remove('hidden');
         fileHint.textContent = '(MP4, WebM — max 20 MB)';
-        document.getElementById('file').accept = 'video/*';
-    } else {
-        contentWrapper.classList.add('hidden');
-        fileWrapper.classList.add('hidden');
+        fileInput.accept = 'video/*';
     }
 }
 

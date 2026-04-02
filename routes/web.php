@@ -98,9 +98,13 @@ Route::middleware(['auth', 'role:doctor'])
     ->group(function () {
         Route::get('/dashboard', [DoctorDashboardController::class, 'index'])->name('dashboard');
 
-        // Schedule (resource-style)
+        // Schedule (literal routes MUST come before {schedule} wildcard)
         Route::get('/schedule', [DoctorScheduleController::class, 'index'])->name('schedule.index');
         Route::post('/schedule', [DoctorScheduleController::class, 'store'])->name('schedule.store');
+        // Blocked dates — declared before wildcards so Laravel doesn't catch them as {schedule}
+        Route::post('/schedule/block-date', [DoctorScheduleController::class, 'blockDate'])->name('schedule.blockDate');
+        Route::delete('/schedule/unblock-date', [DoctorScheduleController::class, 'unblockDate'])->name('schedule.unblockDate');
+        // Wildcard CRUD routes (must come AFTER literal routes above)
         Route::put('/schedule/{schedule}', [DoctorScheduleController::class, 'update'])->name('schedule.update');
         Route::delete('/schedule/{schedule}', [DoctorScheduleController::class, 'destroy'])->name('schedule.destroy');
 
