@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @vite(['resources/css/app.css'])
     <meta name="description" content="AskDocPH — Mental Health Support Platform">
     <title>@yield('title', 'AskDocPH') — Mental Health Support</title>
     <link rel="icon" href="data:,">
@@ -12,6 +13,33 @@
     @stack('head')
 </head>
 <body class="h-full bg-gray-50 text-gray-900 font-['Inter'] antialiased">
+<div id="page-loader" 
+    style="position:fixed;top:0;left:0;
+    width:100%;height:100%;
+    background:#fff;z-index:9999;
+    display:flex;align-items:center;
+    justify-content:center;">
+    <div style="text-align:center">
+        <div style="width:40px;height:40px;
+        border:3px solid #e5e7eb;
+        border-top:3px solid #16a34a;
+        border-radius:50%;
+        animation:spin 0.8s linear infinite;
+        margin:0 auto;">
+        </div>
+        <p style="color:#16a34a;
+        font-size:14px;margin-top:8px;
+        font-family:sans-serif;">
+        Loading...</p>
+    </div>
+</div>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
 
 <div class="flex h-screen overflow-hidden">
 
@@ -122,7 +150,7 @@
 </div>
 
 {{-- Close dropdown on outside click --}}
-@vite(['resources/css/app.css', 'resources/js/app.js'])
+@vite(['resources/js/app.js'])
 
 <script>
 document.addEventListener('click', function(e) {
@@ -157,6 +185,21 @@ document.addEventListener('DOMContentLoaded', function () {
     if (flash) setTimeout(() => flash.style.opacity = '0', 3500);
 });
 @endauth
+</script>
+
+<script>
+window.addEventListener('load', function() {
+    const loader = document.getElementById(
+        'page-loader');
+    if (loader) {
+        loader.style.opacity = '0';
+        loader.style.transition = 
+            'opacity 0.2s ease';
+        setTimeout(function() {
+            loader.style.display = 'none';
+        }, 200);
+    }
+});
 </script>
 
 @stack('scripts')
