@@ -14,7 +14,7 @@ class DoctorListController extends Controller
     {
         $query = User::where('role', 'doctor')
             ->where('doctor_status', 'approved')
-            ->with(['doctorApplications.professionalTitles.professionalTitle']);
+            ->with(['doctorApplications.professionalTitles.professionalTitle', 'doctorReviews']);
 
         $allDoctors = $query->get();
 

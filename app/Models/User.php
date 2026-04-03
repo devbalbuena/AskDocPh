@@ -202,4 +202,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(DoctorSchedule::class, 'doctor_id');
     }
+
+    // ─── Reviews ──────────────────────────────────────
+
+    public function doctorReviews(): HasMany
+    {
+        return $this->hasMany(DoctorReview::class, 'doctor_id');
+    }
 }

@@ -38,10 +38,20 @@
                 @endif
             </div>
             <p class="text-gray-900 font-semibold">Dr. {{ $doctor->display_name }}</p>
-            @if($doctor->next_available)
-                <p class="text-green-600 text-sm mt-0.5">Next available: {{ $doctor->next_available }}</p>
+            @php $avgRating = $doctor->doctorReviews->avg('rating'); @endphp
+            @if($avgRating > 0)
+            <div class="flex items-center gap-1 mt-1 text-xs">
+                <svg class="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <span class="font-bold text-gray-700">{{ number_format($avgRating, 1) }}</span>
+                <span class="text-gray-400">({{ $doctor->doctorReviews->count() }})</span>
+            </div>
             @else
-                <p class="text-gray-400 text-sm mt-0.5">No availability set yet</p>
+            <div class="text-xs text-gray-400 mt-1">No reviews yet</div>
+            @endif
+            @if($doctor->next_available)
+                <p class="text-green-600 text-sm mt-1.5">Next available: {{ $doctor->next_available }}</p>
+            @else
+                <p class="text-gray-400 text-sm mt-1.5">No availability set yet</p>
             @endif
             @if($titles)
             <p class="text-green-600 text-xs mt-1">{{ $titles }}</p>

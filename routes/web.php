@@ -4,13 +4,18 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\PublicProfileController;
+use App\Http\Controllers\MessagingController;
 use App\Http\Controllers\Shared\FeedController;
 use App\Http\Controllers\Shared\NotificationController;
+use App\Http\Controllers\Shared\GroupController;
+use App\Http\Controllers\Shared\HelpRequestController;
+use App\Http\Controllers\Shared\PostAnalyticsController;
 use App\Http\Controllers\Patient\PatientDashboardController;
 use App\Http\Controllers\Patient\AppointmentController;
 use App\Http\Controllers\Patient\BookmarkController;
 use App\Http\Controllers\Patient\CrisisReportController;
 use App\Http\Controllers\Patient\DoctorListController;
+use App\Http\Controllers\Patient\MoodTrackerController;
 use App\Http\Controllers\Doctor\DoctorDashboardController;
 use App\Http\Controllers\Doctor\DoctorScheduleController;
 use App\Http\Controllers\Doctor\DoctorAppointmentController;
@@ -20,6 +25,8 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminDoctorApplicationController;
 use App\Http\Controllers\Admin\AdminCrisisReportController;
 use App\Http\Controllers\Admin\AdminAffirmationController;
+use App\Http\Controllers\Admin\AdminReportController;
+use App\Http\Controllers\DoctorReviewController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Public landing page ──────────────────────────────────────────────────────
@@ -63,6 +70,43 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/users/{user}/follow', [FollowController::class, 'toggle'])->name('users.follow');
     Route::get('/users/{user}/followers', [FollowController::class, 'followers'])->name('users.followers');
     Route::get('/users/{user}/following', [FollowController::class, 'following'])->name('users.following');
+
+    // Messaging — IMPORTANT: literal routes BEFORE wildcard {conversation}
+    Route::get('/messages/unread-count', [MessagingController::class, 'unreadCount'])->name('messages.unread-count');
+    Route::get('/messages', [MessagingController::class, 'index'])->name('messages.index');
+    Route::post('/messages/start', [MessagingController::class, 'start'])->name('messages.start');
+    Route::get('/messages/{conversation}/poll', [MessagingController::class, 'poll'])->name('messages.poll');
+    Route::post('/messages/{conversation}/send', [MessagingController::class, 'send'])->name('messages.send');
+    Route::get('/messages/{conversation}', [MessagingController::class, 'show'])->name('messages.show');
+
+    // User search (for new message modal)
+    Route::get('/users/search', [MessagingController::class, 'searchUsers'])->name('users.search');
+
+    // Doctor Reviews
+    Route::post('/doctor-reviews', [DoctorReviewController::class, 'store'])->name('doctor-reviews.store');
+    Route::get('/doctors/{doctor}/reviews', [DoctorReviewController::class, 'index'])->name('doctor-reviews.index');
+
+    // Group Communities
+    Route::get('/communities', [GroupController::class, 'index'])->name('communities.index');
+    Route::get('/communities/create', [GroupController::class, 'create'])->name('communities.create');
+    Route::post('/communities', [GroupController::class, 'store'])->name('communities.store');
+    Route::get('/communities/{group}', [GroupController::class, 'show'])->name('communities.show');
+    Route::post('/communities/{group}/join', [GroupController::class, 'join'])->name('communities.join');
+    Route::post('/communities/{group}/leave', [GroupController::class, 'leave'])->name('communities.leave');
+    Route::post('/communities/{group}/post', [GroupController::class, 'createPost'])->name('communities.post');
+
+    // Help Requests
+    Route::get('/help-requests', [HelpRequestController::class, 'index'])->name('help-requests.index');
+    Route::get('/help-requests/create', [HelpRequestController::class, 'create'])->name('help-requests.create');
+    Route::post('/help-requests', [HelpRequestController::class, 'store'])->name('help-requests.store');
+    Route::get('/help-requests/{helpRequest}', [HelpRequestController::class, 'show'])->name('help-requests.show');
+    Route::post('/help-requests/{helpRequest}/accept', [HelpRequestController::class, 'accept'])->name('help-requests.accept');
+    Route::post('/help-requests/{helpRequest}/decline', [HelpRequestController::class, 'decline'])->name('help-requests.decline');
+    Route::post('/help-requests/{helpRequest}/resolve', [HelpRequestController::class, 'resolve'])->name('help-requests.resolve');
+    Route::post('/help-requests/{helpRequest}/message', [HelpRequestController::class, 'sendMessage'])->name('help-requests.message');
+
+    // Post Analytics
+    Route::get('/profile/analytics', [PostAnalyticsController::class, 'index'])->name('profile.analytics');
 });
 
 // ─── Patient Routes ───────────────────────────────────────────────────────────
@@ -88,6 +132,14 @@ Route::middleware(['auth', 'role:patient'])
 
         // Crisis
         Route::post('/crisis-reports', [CrisisReportController::class, 'store'])->name('crisis.store');
+
+        // Mood Tracker
+        Route::get('/mood', [MoodTrackerController::class, 'index'])->name('mood.index');
+        Route::post('/mood', [MoodTrackerController::class, 'store'])->name('mood.store');
+        Route::get('/mood/history', [MoodTrackerController::class, 'history'])->name('mood.history');
+
+        // Doctor reviews from appointment
+        Route::post('/appointments/{appointment}/review', [DoctorReviewController::class, 'store'])->name('appointments.review');
     });
 
 // ─── Doctor Routes ────────────────────────────────────────────────────────────
@@ -123,6 +175,14 @@ Route::middleware(['auth', 'role:doctor'])
         Route::get('/resources/create', [ResourceController::class, 'create'])->name('resources.create');
         Route::post('/resources', [ResourceController::class, 'store'])->name('resources.store');
         Route::delete('/resources/{resource}', [ResourceController::class, 'destroy'])->name('resources.destroy');
+
+        // Calendar data endpoint — literal before wildcard
+        Route::get('/schedule/calendar-data', [DoctorScheduleController::class, 'calendarData'])->name('schedule.calendar');
+        Route::post('/schedule/block-date-db', [DoctorScheduleController::class, 'blockDateDb'])->name('schedule.blockDateDb');
+        Route::delete('/schedule/unblock-date-db', [DoctorScheduleController::class, 'unblockDateDb'])->name('schedule.unblockDateDb');
+
+        // Patient mood history (for doctors viewing before appointments)
+        Route::get('/appointments/{appointment}/patient-mood', [DoctorAppointmentController::class, 'patientMoodHistory'])->name('appointments.patientMood');
     });
 
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
@@ -150,6 +210,15 @@ Route::middleware(['auth', 'role:admin'])
 
         // Affirmations
         Route::resource('/affirmations', AdminAffirmationController::class);
+
+        // Reports Export
+        Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/export/users', [AdminReportController::class, 'exportUsers'])->name('reports.export.users');
+        Route::get('/reports/export/appointments', [AdminReportController::class, 'exportAppointments'])->name('reports.export.appointments');
+        Route::get('/reports/export/crisis-reports', [AdminReportController::class, 'exportCrisisReports'])->name('reports.export.crisis');
+        Route::get('/reports/export/users-pdf', [AdminReportController::class, 'exportUsersPdf'])->name('reports.export.users-pdf');
+        Route::get('/reports/export/appointments-pdf', [AdminReportController::class, 'exportAppointmentsPdf'])->name('reports.export.appointments-pdf');
+        Route::get('/reports/export/crisis-reports-pdf', [AdminReportController::class, 'exportCrisisPdf'])->name('reports.export.crisis-pdf');
     });
 
 require __DIR__.'/auth.php';

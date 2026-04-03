@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\DoctorReview;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -40,8 +41,11 @@ class PublicProfileController extends Controller
         $followersCount = $profileUser->followersCount();
         $followingCount = $profileUser->followingCount();
 
-        // Doctor-specific: load professional titles if the profile user is a doctor
+        // Doctor-specific: load extra doctor info
         $professionalTitles = [];
+        $doctorReviews = collect();
+        $doctorAverageRating = 0;
+
         if ($profileUser->role === 'doctor') {
             $application = $profileUser->doctorApplications()
                 ->with('professionalTitles')
@@ -51,6 +55,13 @@ class PublicProfileController extends Controller
             if ($application) {
                 $professionalTitles = $application->professionalTitles->pluck('title')->toArray();
             }
+
+            $doctorReviews = DoctorReview::where('doctor_id', $profileUser->id)
+                ->with('patient')
+                ->latest()
+                ->get();
+                
+            $doctorAverageRating = $doctorReviews->avg('rating') ?? 0;
         }
 
         return view('shared.profile.public', [
@@ -60,6 +71,8 @@ class PublicProfileController extends Controller
             'followersCount'     => $followersCount,
             'followingCount'     => $followingCount,
             'professionalTitles' => $professionalTitles,
+            'doctorReviews'      => $doctorReviews,
+            'doctorAverageRating'=> $doctorAverageRating,
             'layout'             => $this->layout(),
             'isOwnProfile'       => auth()->id() === $profileUser->id,
         ]);

@@ -8,10 +8,21 @@
     {{-- Main grid --}}
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
-        {{-- ── Left: Current Slots ── --}}
-        <div class="xl:col-span-2 space-y-3">
-            <h3 class="text-base font-semibold text-gray-900">Current Availability Slots</h3>
-            @php $days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday']; @endphp
+        {{-- ── Left: Calendar & Weekly Slots ── --}}
+        <div class="xl:col-span-2 space-y-6">
+            
+            {{-- Calendar View --}}
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-semibold text-gray-900">Monthly Calendar Overview</h3>
+                    <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">View Only</span>
+                </div>
+                <div id="calendar" class="w-full h-[500px]"></div>
+            </div>
+
+            <div class="space-y-3">
+                <h3 class="text-base font-semibold text-gray-900">Weekly Availability Templates</h3>
+                @php $days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday']; @endphp
 
             <div id="slots-container" class="space-y-3">
             @foreach($days as $day)
@@ -230,8 +241,42 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 <script>
 const CSRF = document.querySelector('meta[name="csrf-token"]').content;
+
+// ── Initialize Calendar ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    if (calendarEl) {
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            events: '{{ route("doctor.schedule.calendar") }}',
+            headerToolbar: {
+                left: 'title',
+                right: 'today prev,next'
+            },
+            height: '100%',
+            eventDidMount: function(info) {
+                // Add styling based on event title
+                if (info.event.title === 'Blocked') {
+                    info.el.style.backgroundColor = '#FEE2E2'; // red-100
+                    info.el.style.borderColor = '#FCA5A5';     // red-300
+                    info.el.style.color = '#B91C1C';           // red-700
+                } else if (info.event.title.includes('Appts')) {
+                    info.el.style.backgroundColor = '#DBEAFE'; // blue-100
+                    info.el.style.borderColor = '#93C5FD';     // blue-300
+                    info.el.style.color = '#1D4ED8';           // blue-700
+                } else {
+                    info.el.style.backgroundColor = '#D1FAE5'; // green-100
+                    info.el.style.borderColor = '#6EE7B7';     // green-300
+                    info.el.style.color = '#047857';           // green-700
+                }
+            }
+        });
+        calendar.render();
+    }
+});
 
 // ── Recurring / Specific date toggle ─────────────────────────────────────────
 const recurringChk  = document.getElementById('add-recurring');
