@@ -20,7 +20,14 @@
         </div>
         <div>
             <p class="text-lg font-bold text-gray-900">Dr. {{ $doctor->display_name }}</p>
-            <p class="text-gray-500 text-sm">{{ $doctor->bio ?? 'Mental Health Professional' }}</p>
+            @php
+            $professional = json_decode($doctor->bio ?? '{}', true) ?? [];
+            @endphp
+            @if(!empty($professional['specialization']))
+            <p class="text-gray-500 text-sm mt-1">
+                {{ $professional['specialization'] }}
+            </p>
+            @endif
         </div>
     </div>
 

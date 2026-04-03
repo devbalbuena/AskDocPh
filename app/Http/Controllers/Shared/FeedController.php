@@ -27,7 +27,9 @@ class FeedController extends Controller
             default  => 'layouts.patient',
         };
 
-        return view('shared.feed.index', compact('posts', 'layout'));
+        $userBookmarks = auth()->user()->bookmarks()->pluck('post_id')->toArray();
+
+        return view('shared.feed.index', compact('posts', 'layout', 'userBookmarks'));
     }
 
     /** POST /posts — create a new post (returns JSON for Axios) */
@@ -71,7 +73,15 @@ class FeedController extends Controller
 
         return response()->json([
             'success' => true,
-            'post'    => $post,
+            'post'    => [
+                'id' => $post->id,
+                'media' => $post->media->map(function($m) {
+                    return [
+                        'url' => \Illuminate\Support\Facades\Storage::url($m->path),
+                        'type' => $m->media_type,
+                    ];
+                }),
+            ],
         ]);
     }
 

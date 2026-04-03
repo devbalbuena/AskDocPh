@@ -209,6 +209,16 @@
                     </svg>
                     {{ $post->comments->count() }} Comment{{ $post->comments->count() !== 1 ? 's' : '' }}
                 </button>
+
+                <button onclick="toggleBookmark({{ $post->id }}, this)"
+                    class="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-yellow-500 transition-colors bookmark-btn"
+                    data-post-id="{{ $post->id }}"
+                    data-bookmarked="{{ in_array($post->id, $userBookmarks) ? 'true' : 'false' }}">
+                    <svg class="w-4 h-4" fill="{{ in_array($post->id, $userBookmarks) ? 'currentColor' : 'none' }}" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                    </svg>
+                    <span class="bookmark-label">{{ in_array($post->id, $userBookmarks) ? 'Saved' : 'Save' }}</span>
+                </button>
             </div>
 
             {{-- Comments Section (hidden by default) --}}
@@ -419,6 +429,24 @@ function deletePost(postId) {
     axios.delete(`/posts/${postId}`)
         .then(() => document.getElementById('post-' + postId)?.remove())
         .catch(() => alert('Failed to delete post.'));
+}
+
+// ── Bookmark toggle ─────────────────────────────────────────────
+function toggleBookmark(postId, btn) {
+    axios.post('/patient/bookmarks/' + postId + '/toggle')
+    .then(res => {
+        const label = btn.querySelector('.bookmark-label');
+        const icon = btn.querySelector('svg');
+        if (res.data.bookmarked) {
+            label.textContent = 'Saved';
+            icon.setAttribute('fill', 'currentColor');
+            btn.classList.add('text-yellow-500');
+        } else {
+            label.textContent = 'Save';
+            icon.setAttribute('fill', 'none');
+            btn.classList.remove('text-yellow-500');
+        }
+    });
 }
 
 // ── Report post modal ───────────────────────────────────────────

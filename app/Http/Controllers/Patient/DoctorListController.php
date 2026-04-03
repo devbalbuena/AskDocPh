@@ -53,6 +53,7 @@ class DoctorListController extends Controller
         })->map(function($doctor) {
             $next = DoctorSchedule::where('doctor_id', $doctor->id)->where('is_available', true)->first();
             $doctor->next_available = $next ? ucfirst($next->day_of_week) : null;
+            $doctor->professional = json_decode($doctor->bio ?? '{}', true) ?? [];
             return $doctor;
         });
 
@@ -93,6 +94,8 @@ class DoctorListController extends Controller
             });
 
         $doctor->load(['doctorApplications.professionalTitles.professionalTitle']);
+
+        $doctor->professional = json_decode($doctor->bio ?? '{}', true) ?? [];
 
         return view('patient.doctors.schedule', compact('doctor', 'schedules'));
     }

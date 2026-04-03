@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="AskDocPH — Mental Health Support Platform">
     <title>@yield('title', 'AskDocPH') — Mental Health Support</title>
+    <link rel="icon" href="data:,">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     @stack('head')
@@ -19,7 +20,8 @@
         {{-- Logo --}}
         <div class="flex items-center px-6 py-5 bg-green-800">
             <a href="{{ url('/') }}">
-                <img src="{{ asset('img/logo.png') }}" alt="AskDocPH" class="h-9 w-auto">
+                {{-- <img src="{{ asset('img/logo.png') }}" alt="AskDocPH Logo"> --}}
+                <span class="text-green-700 font-bold text-xl tracking-tight">AskDoc<span class="text-green-500">PH</span></span>
             </a>
         </div>
 
@@ -148,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }).catch(() => {});
     }
     pollNotifications();
-    setInterval(pollNotifications, 30000);
+    setInterval(pollNotifications, 60000);
 
     // Auto-hide flash
     const flash = document.getElementById('flash-msg');

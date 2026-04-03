@@ -46,7 +46,14 @@
             @if($titles)
             <p class="text-green-600 text-xs mt-1">{{ $titles }}</p>
             @endif
-            <p class="text-gray-500 text-xs mt-1">{{ $doctor->bio ? Str::limit($doctor->bio, 60) : 'Mental Health Professional' }}</p>
+            @php
+            $professional = json_decode($doctor->bio ?? '{}', true) ?? [];
+            @endphp
+            @if(!empty($professional['specialization']))
+            <p class="text-gray-500 text-sm mt-1">
+                {{ $professional['specialization'] }}
+            </p>
+            @endif
             <a href="{{ route('patient.doctors.schedule', $doctor) }}" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-gray-900 text-sm font-medium py-2.5 rounded-lg transition-colors">
                 Book Appointment
             </a>
