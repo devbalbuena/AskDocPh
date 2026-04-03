@@ -25,8 +25,9 @@
                         @endforeach
                     </div>
                     @endif
-                    <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                        <span>❤️ {{ $post->likes->count() }}</span>
+                    <div class="flex items-center justify-between mt-3 text-xs text-gray-500">
+                        <span class="flex items-center gap-1">❤️ {{ $post->likes->count() }}</span>
+                        <a href="/feed" class="text-green-600 hover:underline">View in Feed →</a>
                     </div>
                 </div>
             </div>
@@ -40,14 +41,20 @@
     </div>
     @empty
     <div class="bg-white border border-gray-200 rounded-xl p-12 text-center">
-        <svg class="w-12 h-12 text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
-        <p class="text-gray-500">You haven't bookmarked any posts yet.</p>
-        <a href="{{ url('/feed') }}" class="mt-3 inline-block bg-green-600 hover:bg-green-700 text-gray-900 text-sm px-5 py-2.5 rounded-lg transition-colors">Go to Feed</a>
+        <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+        <p class="text-gray-500 font-medium pt-1">No bookmarks yet</p>
+        <p class="text-gray-400 text-sm mt-1 mb-4">Save posts you want to revisit by clicking the bookmark icon on any post.</p>
+        <a href="{{ url('/feed') }}" class="mt-3 inline-block bg-green-600 hover:bg-green-700 text-white text-sm px-5 py-2.5 rounded-lg transition-colors">Go to Feed</a>
     </div>
     @endforelse
     @if($bookmarks->hasPages())
     <div>{{ $bookmarks->links() }}</div>
     @endif
+</div>
+
+{{-- Toast Notification --}}
+<div id="bookmark-toast" class="fixed bottom-4 right-4 bg-gray-800 text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50 opacity-0 pointer-events-none" style="transition: opacity 0.3s ease-in-out;">
+    Bookmark removed
 </div>
 @endsection
 
@@ -58,6 +65,13 @@ function removeBookmark(postId, btn) {
         .then(res => {
             if (!res.data.bookmarked) {
                 document.getElementById('bookmark-card-' + postId)?.remove();
+                const toast = document.getElementById('bookmark-toast');
+                toast.classList.remove('opacity-0');
+                toast.classList.add('opacity-100');
+                setTimeout(() => {
+                    toast.classList.remove('opacity-100');
+                    toast.classList.add('opacity-0');
+                }, 2000);
             }
         });
 }

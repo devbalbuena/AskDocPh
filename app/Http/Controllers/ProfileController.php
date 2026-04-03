@@ -29,17 +29,21 @@ class ProfileController extends Controller
         $user   = auth()->user();
         $layout = $this->layout();
 
-        // For doctors, decode the bio column (JSON) into structured professional fields.
-        // For all other roles, $professional is an empty array (bio is plain text).
         $professional = [];
-        if ($user->role === 'doctor' && $user->bio) {
+        $emergency = [];
+
+        if ($user->bio) {
             $decoded = json_decode($user->bio, true);
             if (is_array($decoded)) {
-                $professional = $decoded;
+                if ($user->role === 'doctor') {
+                    $professional = $decoded;
+                } elseif ($user->role === 'patient') {
+                    $emergency = $decoded;
+                }
             }
         }
 
-        return view('profile.show', compact('user', 'layout', 'professional'));
+        return view('profile.show', compact('user', 'layout', 'professional', 'emergency'));
     }
 
     /**
@@ -61,12 +65,16 @@ class ProfileController extends Controller
             'cover_photo'   => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:10240'],
         ];
 
-        // Extra validation for doctor professional fields
+        // Extra validation for role specific fields
         if ($user->role === 'doctor') {
             $rules['specialization']    = ['nullable', 'string', 'max:255'];
             $rules['prc_license_number'] = ['nullable', 'string', 'max:100'];
             $rules['hospital_affiliation'] = ['nullable', 'string', 'max:255'];
             $rules['years_experience']  = ['nullable', 'integer', 'min:0', 'max:60'];
+        } elseif ($user->role === 'patient') {
+            $rules['emergency_contact_name'] = ['nullable', 'string', 'max:255'];
+            $rules['emergency_contact_number'] = ['nullable', 'string', 'max:255'];
+            $rules['emergency_contact_relationship'] = ['nullable', 'string', 'max:255'];
         }
 
         $validated = $request->validate($rules);
@@ -89,9 +97,7 @@ class ProfileController extends Controller
                 ->store('profiles/covers', 'public');
         }
 
-        // For doctors: encode professional fields as JSON into the bio column.
-        // Remove individual professional keys from $validated so they don't
-        // get written to non-existent columns, then set bio to JSON.
+        // Encode professional or emergency fields as JSON into the bio column.
         if ($user->role === 'doctor') {
             $validated['bio'] = json_encode([
                 'specialization'    => $request->input('specialization'),
@@ -99,12 +105,22 @@ class ProfileController extends Controller
                 'hospital'          => $request->input('hospital_affiliation'),
                 'years_experience'  => $request->input('years_experience'),
             ]);
-            // Remove doctor-only keys that aren't real columns
             unset(
                 $validated['specialization'],
                 $validated['prc_license_number'],
                 $validated['hospital_affiliation'],
                 $validated['years_experience']
+            );
+        } elseif ($user->role === 'patient') {
+            $validated['bio'] = json_encode([
+                'emergency_name'    => $request->input('emergency_contact_name'),
+                'emergency_number'  => $request->input('emergency_contact_number'),
+                'emergency_relationship' => $request->input('emergency_contact_relationship'),
+            ]);
+            unset(
+                $validated['emergency_contact_name'],
+                $validated['emergency_contact_number'],
+                $validated['emergency_contact_relationship']
             );
         }
 

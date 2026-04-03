@@ -116,7 +116,7 @@
                 No {{ $activeType }} resources available yet.
                 <a href="{{ route('resources.index') }}" class="text-green-600 hover:underline">View all resources</a>
             @else
-                No resources have been published yet.
+                Check back later for helpful health articles, videos, and guides from our verified doctors!
             @endif
         </p>
     </div>

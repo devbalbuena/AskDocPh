@@ -4,6 +4,26 @@
 
 @section('content')
 <div class="space-y-6">
+    <form method="GET" class="flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl rounded-xl shadow-sm border border-gray-200">
+        <div>
+            <select name="specialization" onchange="this.form.submit()" class="bg-gray-50 border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-green-500 min-w-[200px]">
+                <option value="">All Specializations</option>
+                @foreach($specializations as $spec)
+                    <option value="{{ $spec }}" {{ request('specialization') === $spec ? 'selected' : '' }}>{{ $spec }}</option>
+                @endforeach
+            </select>
+        </div>
+        <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer bg-gray-50 border border-gray-300 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors">
+            <input type="checkbox" name="available_week" value="1" {{ request('available_week') ? 'checked' : '' }} class="rounded text-green-600 focus:ring-green-500" onchange="this.form.submit()">
+            Available This Week
+        </label>
+        <div class="ml-auto">
+            @if(request('specialization') || request('available_week'))
+            <a href="{{ route('patient.doctors.index') }}" class="text-sm text-gray-500 hover:text-red-500">Clear Filters</a>
+            @endif
+        </div>
+    </form>
+
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         @forelse($doctors as $doctor)
         @php
@@ -18,6 +38,11 @@
                 @endif
             </div>
             <p class="text-gray-900 font-semibold">Dr. {{ $doctor->display_name }}</p>
+            @if($doctor->next_available)
+                <p class="text-green-600 text-sm mt-0.5">Next available: {{ $doctor->next_available }}</p>
+            @else
+                <p class="text-gray-400 text-sm mt-0.5">No availability set yet</p>
+            @endif
             @if($titles)
             <p class="text-green-600 text-xs mt-1">{{ $titles }}</p>
             @endif

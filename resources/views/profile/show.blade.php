@@ -54,9 +54,9 @@
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <h1 class="text-xl font-bold text-gray-900">{{ $user->display_name }}</h1>
-                        <p class="text-sm text-gray-500">&commat;{{ $user->username }}</p>
-                        {{-- Show bio as text only for non-doctor roles (doctors store JSON in bio) --}}
-                        @if($user->role !== 'doctor' && $user->bio)
+                        <p class="text-sm text-gray-500">{{ '@' . $user->username }}</p>
+                        {{-- Show bio as text only for non-doctor/patient roles --}}
+                        @if(!in_array($user->role, ['doctor', 'patient']) && $user->bio)
                         <p class="text-sm text-gray-700 mt-2 leading-relaxed max-w-lg">{{ $user->bio }}</p>
                         @endif
                         {{-- For doctors: show key professional info in the header --}}
@@ -142,8 +142,8 @@
                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500 transition-colors">
             </div>
 
-            {{-- Bio — only for patient and admin roles, hidden for doctors --}}
-            @if(auth()->user()->role !== 'doctor')
+            {{-- Bio — admin only, hidden for doctors & patients --}}
+            @if(!in_array(auth()->user()->role, ['doctor', 'patient']))
             <div>
                 <label for="bio" class="block text-xs font-medium text-gray-700 mb-1.5">Bio <span class="text-gray-400">(optional, max 500 characters)</span></label>
                 <textarea id="bio" name="bio" rows="3"
@@ -202,6 +202,49 @@
                            class="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition-colors cursor-pointer">
                 </div>
             </div>
+
+            {{-- ── Patient-only: Emergency Contact ────────────────────────── --}}
+            @if(auth()->user()->role === 'patient')
+            <div class="pt-4 border-t border-gray-200 space-y-4">
+                <h3 class="text-base font-semibold text-gray-900">Emergency Contact</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="emergency_contact_name" class="block text-xs font-medium text-gray-700 mb-1.5">
+                            Emergency Contact Name
+                        </label>
+                        <input type="text" id="emergency_contact_name" name="emergency_contact_name"
+                               value="{{ old('emergency_contact_name', $emergency['emergency_name'] ?? '') }}"
+                               placeholder="Full name of emergency contact"
+                               class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors">
+                    </div>
+                    <div>
+                        <label for="emergency_contact_number" class="block text-xs font-medium text-gray-700 mb-1.5">
+                            Emergency Contact Number
+                        </label>
+                        <input type="text" id="emergency_contact_number" name="emergency_contact_number"
+                               value="{{ old('emergency_contact_number', $emergency['emergency_number'] ?? '') }}"
+                               placeholder="e.g. +63 912 345 6789"
+                               class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="emergency_contact_relationship" class="block text-xs font-medium text-gray-700 mb-1.5">
+                            Relationship
+                        </label>
+                        <select id="emergency_contact_relationship" name="emergency_contact_relationship"
+                                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500 transition-colors">
+                            <option value="">Select Relationship</option>
+                            @foreach(['Parent', 'Spouse', 'Sibling', 'Friend', 'Guardian', 'Other'] as $rel)
+                            <option value="{{ $rel }}" {{ old('emergency_contact_relationship', $emergency['emergency_relationship'] ?? '') === $rel ? 'selected' : '' }}>{{ $rel }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+            @endif
 
             {{-- ── Doctor-only: Professional Information ────────────────────── --}}
             @if(auth()->user()->role === 'doctor')
