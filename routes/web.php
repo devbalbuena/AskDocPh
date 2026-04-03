@@ -23,9 +23,8 @@ use App\Http\Controllers\Admin\AdminAffirmationController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Public landing page ──────────────────────────────────────────────────────
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [\App\Http\Controllers\LandingController::class, 'index'])->name('landing');
+Route::post('/contact', [\App\Http\Controllers\LandingController::class, 'contact'])->name('contact');
 
 // ─── Profile ────────────────────────────────────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
