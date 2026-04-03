@@ -6,26 +6,31 @@
 <div class="space-y-6">
 
     {{-- Welcome Card --}}
-    <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl shadow-sm p-6 mb-4">
-        <div class="flex items-center justify-between">
+    <div class="bg-gradient-to-br from-green-600 to-green-800 rounded-3xl shadow-sm p-8 mb-6 relative overflow-hidden">
+        {{-- Decorative circles --}}
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-10 pointer-events-none">
+            <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-white"></div>
+            <div class="absolute top-1/2 left-1/2 w-64 h-64 rounded-full bg-white"></div>
+        </div>
+        <div class="flex items-center justify-between relative z-10">
             <div>
-                <h2 class="text-2xl font-bold text-white mt-0.5">{{ $greeting }}, {{ auth()->user()->fname }}! 👋</h2>
+                <h2 class="text-3xl font-bold text-white mt-0.5">{{ $greeting }}, {{ auth()->user()->fname }}! 👋</h2>
                 @if($todayAffirmation)
                 <p class="text-green-100 text-sm mt-3 italic">"{{ $todayAffirmation->quote }}"</p>
                 @if($todayAffirmation->author)
-                <p class="text-green-200 text-xs mt-1">— {{ $todayAffirmation->author }}</p>
+                <p class="text-green-200 text-xs mt-1 font-semibold">— {{ $todayAffirmation->author }}</p>
                 @endif
                 @endif
             </div>
-            <div class="hidden md:flex w-20 h-20 rounded-full bg-white/20 border border-white/30 items-center justify-center backdrop-blur-sm">
-                <span class="text-3xl font-black text-white">{{ strtoupper(substr(auth()->user()->fname, 0, 1)) }}</span>
+            <div class="hidden md:flex w-24 h-24 rounded-full bg-white/20 border border-white/30 items-center justify-center backdrop-blur-sm">
+                <span class="text-4xl font-black text-white">{{ strtoupper(substr(auth()->user()->fname, 0, 1)) }}</span>
             </div>
         </div>
     </div>
 
     {{-- Prominent Find a Doctor Action --}}
     <div class="mb-6">
-        <a href="{{ route('patient.doctors.index') }}" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-medium inline-flex items-center gap-2 transition-colors shadow-sm">
+        <a href="{{ route('patient.doctors.index') }}" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-medium inline-flex items-center gap-2 transition-colors shadow-sm">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
             Find a Doctor
         </a>
@@ -33,7 +38,7 @@
 
     {{-- Stats Row --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
                 <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
             </div>
@@ -42,7 +47,7 @@
                 <p class="text-gray-500 text-sm">Upcoming Appointments</p>
             </div>
         </div>
-        <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
                 <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
             </div>
@@ -51,7 +56,7 @@
                 <p class="text-gray-500 text-sm">Saved Bookmarks</p>
             </div>
         </div>
-        <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
                 <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
             </div>
@@ -65,7 +70,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {{-- Upcoming Appointments --}}
-        <div class="lg:col-span-1 bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5">
+        <div class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-base font-semibold text-gray-900">Upcoming Appointments</h3>
                 <a href="{{ route('patient.appointments.index') }}" class="text-green-600 text-xs hover:text-green-700 transition-colors">View all →</a>
@@ -89,7 +94,7 @@
         </div>
 
         {{-- Recent Feed Posts --}}
-        <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5">
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-base font-semibold text-gray-900">Recent Posts</h3>
                 <a href="{{ url('/feed') }}" class="text-green-600 text-xs hover:text-green-700 transition-colors">View feed →</a>
@@ -118,7 +123,7 @@
     </div>
 
     {{-- Quick Actions --}}
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <h3 class="text-base font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div class="flex flex-wrap gap-3">
             <a href="{{ route('patient.doctors.index') }}" class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors">

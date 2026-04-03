@@ -49,7 +49,7 @@
         <div class="flex items-center px-6 py-5 bg-green-800">
             <a href="{{ url('/') }}">
                 {{-- <img src="{{ asset('img/logo.png') }}" alt="AskDocPH Logo"> --}}
-                <span class="text-green-700 font-bold text-xl tracking-tight">AskDoc<span class="text-green-500">PH</span></span>
+                <span class="text-white font-bold text-xl tracking-tight">AskDoc<span class="text-green-400">PH</span></span>
             </a>
         </div>
 

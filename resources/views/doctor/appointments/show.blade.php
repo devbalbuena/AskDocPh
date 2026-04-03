@@ -21,7 +21,7 @@
     @endif
 
     {{-- Detail card --}}
-    <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <h2 class="text-lg font-semibold text-gray-900">Appointment Details</h2>
             <span class="
@@ -98,7 +98,7 @@
     </div>
 
     {{-- Notes --}}
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 space-y-4">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
         <h3 class="text-base font-semibold text-gray-900">Appointment Notes</h3>
 
         @forelse($appointment->notes as $note)

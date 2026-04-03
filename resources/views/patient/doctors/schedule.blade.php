@@ -10,7 +10,7 @@
     </a>
 
     {{-- Doctor header --}}
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
         <div class="w-16 h-16 rounded-xl bg-green-100 flex items-center justify-center text-2xl font-bold text-green-700 flex-shrink-0 overflow-hidden">
             @if($doctor->profile_photo)
                 <img src="{{ Storage::url($doctor->profile_photo) }}" class="w-full h-full object-cover">
@@ -32,7 +32,7 @@
     </div>
 
     {{-- Availability --}}
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <h3 class="text-base font-semibold text-gray-900 mb-4">Weekly Availability</h3>
         @if($schedules->isEmpty())
         <p class="text-gray-500 text-sm">No available slots at this time.</p>
@@ -55,7 +55,7 @@
     </div>
 
     {{-- Booking Form --}}
-    <form id="booking-form" method="POST" action="{{ route('patient.appointments.store') }}" class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5 space-y-4">
+    <form id="booking-form" method="POST" action="{{ route('patient.appointments.store') }}" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
         @csrf
         <h3 class="text-base font-semibold text-gray-900">Booking Details</h3>
 
@@ -96,7 +96,7 @@
         @endif
 
         <button type="submit" id="submit-btn" disabled
-                class="w-full bg-green-600 hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed text-gray-900 font-medium py-3 rounded-xl transition-colors">
+                class="w-full bg-green-600 hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed text-white shadow-sm font-medium py-3.5 rounded-xl transition-colors">
             Confirm Booking
         </button>
     </form>

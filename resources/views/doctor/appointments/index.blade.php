@@ -5,7 +5,7 @@
 @section('content')
 <div class="space-y-5">
     {{-- Status Filter Tabs --}}
-    <div class="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 w-fit flex-wrap">
+    <div class="flex gap-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-1 w-fit flex-wrap">
         @foreach(['all'=>'All','pending'=>'Pending','confirmed'=>'Confirmed','completed'=>'Completed','cancelled'=>'Cancelled'] as $val => $label)
         <a href="{{ route('doctor.appointments.index', ['status' => $val]) }}"
            class="px-4 py-2 rounded-lg text-sm font-medium transition-all {{ $status === $val ? 'bg-green-600 text-white' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50' }}">
@@ -22,7 +22,7 @@
             $startFmt  = \Carbon\Carbon::parse($appt->start_time)->format('g:i A');
             $endFmt    = \Carbon\Carbon::parse($appt->end_time)->format('g:i A');
         @endphp
-        <div id="appt-card-{{ $appt->id }}" class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div id="appt-card-{{ $appt->id }}" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div class="flex items-start gap-4">
                 <div class="w-11 h-11 rounded-full bg-green-100 flex items-center justify-center text-sm font-bold text-green-600 flex-shrink-0">
                     {{ strtoupper(substr($appt->patient->fname ?? '?', 0, 1)) }}
@@ -69,7 +69,7 @@
         </div>
         @empty
         {{-- Empty state --}}
-        <div class="bg-white border border-gray-200 rounded-xl p-12 text-center">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
             <svg class="w-14 h-14 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>

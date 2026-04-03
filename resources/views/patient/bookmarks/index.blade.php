@@ -6,7 +6,7 @@
 <div class="space-y-4">
     @forelse($bookmarks as $bm)
     @php $post = $bm->post; @endphp
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5" id="bookmark-card-{{ $post->id }}">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6" id="bookmark-card-{{ $post->id }}">
         <div class="flex items-start justify-between gap-4">
             <div class="flex items-start gap-3 flex-1 min-w-0">
                 <div class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center text-sm font-bold text-green-700 flex-shrink-0">
@@ -40,7 +40,7 @@
         </div>
     </div>
     @empty
-    <div class="bg-white border border-gray-200 rounded-xl p-12 text-center">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
         <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
         <p class="text-gray-500 font-medium pt-1">No bookmarks yet</p>
         <p class="text-gray-400 text-sm mt-1 mb-4">Save posts you want to revisit by clicking the bookmark icon on any post.</p>

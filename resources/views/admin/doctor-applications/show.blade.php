@@ -9,7 +9,7 @@
         Back to Applications
     </a>
 
-    <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <h2 class="text-lg font-semibold text-gray-900">Applicant: {{ $application->user->display_name ?? 'Unknown' }}</h2>
             <span class="{{ $application->status === 'pending' ? 'bg-yellow-100 text-yellow-700' : ($application->status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700') }} text-sm px-4 py-1 rounded-full capitalize">

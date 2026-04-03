@@ -21,7 +21,7 @@
     </form>
 
     {{-- Table --}}
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>

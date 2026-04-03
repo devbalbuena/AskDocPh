@@ -5,7 +5,7 @@
 @section('content')
 <div class="space-y-5">
     {{-- Status Filter --}}
-    <div class="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 w-fit flex-wrap">
+    <div class="flex gap-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-1 w-fit flex-wrap">
         @foreach(['all'=>'All','pending'=>'Pending','responding'=>'Responding','resolved'=>'Resolved'] as $val => $label)
         <a href="{{ route('admin.crisis.index', ['status' => $val]) }}"
            class="px-4 py-2 rounded-lg text-sm font-medium transition-all
@@ -15,7 +15,7 @@
         @endforeach
     </div>
 
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>

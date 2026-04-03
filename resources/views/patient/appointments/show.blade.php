@@ -9,9 +9,9 @@
         Back to Appointments
     </a>
 
-    <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         {{-- Status header --}}
-        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
             <h2 class="text-lg font-semibold text-gray-900">Appointment</h2>
             <span class="
                 @if($appointment->status === 'confirmed')  bg-green-100 text-green-700
@@ -59,7 +59,7 @@
 
             {{-- Doctor Notes (patient-visible only) --}}
             @if($appointment->notes->isNotEmpty())
-            <div class="border-t border-gray-200 pt-4">
+            <div class="border-t border-gray-100 pt-6 mt-2">
                 <h3 class="text-sm font-semibold text-gray-900 mb-3">Doctor's Notes</h3>
                 @foreach($appointment->notes as $note)
                 <div class="bg-gray-50/60 rounded-xl p-4 space-y-2">

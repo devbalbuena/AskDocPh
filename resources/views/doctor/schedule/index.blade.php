@@ -17,7 +17,7 @@
             @foreach($days as $day)
             @php $daySlots = $schedules->where('day_of_week', $day); @endphp
             @if($daySlots->isNotEmpty())
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden" data-day="{{ $day }}">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-day="{{ $day }}">
                 <div class="px-4 py-3 border-b border-gray-200 bg-gray-50/60">
                     <p class="text-sm font-medium text-gray-900 capitalize">{{ $day }}</p>
                 </div>
@@ -105,7 +105,7 @@
             </div>
 
             @if($schedules->isEmpty())
-            <div class="bg-white border border-gray-200 rounded-xl p-10 text-center">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
                 <p class="text-gray-500 text-sm">No schedule slots yet. Add your availability using the form.</p>
             </div>
             @endif
@@ -116,7 +116,7 @@
 
         {{-- ── Right: Add Slot Form ── --}}
         <div class="space-y-4">
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 h-fit">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit">
                 <h3 class="text-base font-semibold text-gray-900 mb-4">Add Availability Slot</h3>
                 <div class="space-y-4" id="add-slot-form">
                     <div>
@@ -183,7 +183,7 @@
     </div>
 
     {{-- ── Block Off Dates ── --}}
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 space-y-4">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
         <div>
             <h3 class="text-base font-semibold text-gray-900">Block Off Dates</h3>
             <p class="text-xs text-gray-400 mt-0.5">Mark specific dates when you are unavailable.</p>

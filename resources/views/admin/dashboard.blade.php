@@ -9,6 +9,19 @@
 @section('content')
 <div class="space-y-6">
 
+    {{-- Welcome Card --}}
+    <div class="bg-gradient-to-br from-green-600 to-green-800 rounded-3xl shadow-sm p-8 mb-6 relative overflow-hidden">
+        {{-- Decorative circles --}}
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-10 pointer-events-none">
+            <div class="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-white"></div>
+            <div class="absolute top-1/2 left-1/2 w-64 h-64 rounded-full bg-white"></div>
+        </div>
+        <div class="relative z-10 text-white">
+            <h2 class="text-3xl font-bold text-white mt-0.5">Welcome, {{ auth()->user()->fname ?? 'Administrator' }} 👋</h2>
+            <p class="text-green-100 text-sm mt-2">Here is what's happening on AskDocPH today.</p>
+        </div>
+    </div>
+
     {{-- Stats Cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         @php
@@ -20,7 +33,7 @@
         $colorMap = ['blue' => 'bg-blue-100 text-blue-700', 'green' => 'bg-green-100 text-green-700', 'yellow' => 'bg-yellow-100 text-yellow-700'];
         @endphp
         @foreach($cards as $card)
-        <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 flex items-center gap-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl {{ $colorMap[$card['color']] }} flex items-center justify-center flex-shrink-0">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $card['icon'] }}"/>
@@ -34,7 +47,7 @@
         @endforeach
 
         {{-- Crisis Reports card — conditional red styling when count > 0 --}}
-        <div class="{{ $crisisReports > 0 ? 'bg-red-50 border border-red-200' : 'bg-white border border-gray-200' }} rounded-xl shadow-sm p-5 flex items-center gap-4">
+        <div class="{{ $crisisReports > 0 ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100' }} rounded-2xl shadow-sm border p-6 flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl {{ $crisisReports > 0 ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-500' }} flex items-center justify-center flex-shrink-0">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
@@ -56,13 +69,13 @@
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
         {{-- Registrations Chart --}}
-        <div class="xl:col-span-2 bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5">
+        <div class="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h3 class="text-base font-semibold text-gray-900 mb-4">New Registrations — Last 7 Days</h3>
             <canvas id="registrationsChart" height="120"></canvas>
         </div>
 
         {{-- Recent Crisis Reports --}}
-        <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-base font-semibold text-gray-900">Recent Crisis Reports</h3>
                 <a href="{{ route('admin.crisis.index') }}" class="text-green-600 text-xs hover:text-green-700">View all →</a>
@@ -87,7 +100,7 @@
     </div>
 
     {{-- Recent Doctor Applications --}}
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200">
             <h3 class="text-base font-semibold text-gray-900">Recent Doctor Applications</h3>
             <a href="{{ route('admin.doctor-applications.index') }}" class="text-green-600 text-xs hover:text-green-700">View all →</a>

@@ -20,7 +20,7 @@
         </div>
 
         @forelse($affirmations as $affirmation)
-        <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5" id="aff-row-{{ $affirmation->id }}">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6" id="aff-row-{{ $affirmation->id }}">
 
             {{-- View mode --}}
             <div class="aff-view-{{ $affirmation->id }}">
@@ -75,7 +75,7 @@
             </div>
         </div>
         @empty
-        <div class="bg-white border border-gray-200 rounded-xl p-10 text-center">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
             <p class="text-gray-500 text-sm">No affirmations yet. Add the first one using the form →</p>
         </div>
         @endforelse
@@ -86,7 +86,7 @@
     </div>
 
     {{-- Add New Form --}}
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 h-fit">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-fit">
         <h3 class="text-base font-semibold text-gray-900 mb-4">Add New Affirmation</h3>
 
         <div id="create-error" class="hidden mb-3 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-2.5 text-sm"></div>

@@ -15,7 +15,7 @@
     </a>
 
     {{-- User Profile Card --}}
-    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
         {{-- Cover --}}
         <div class="h-28 bg-gradient-to-br from-green-700 via-green-800 to-emerald-900 relative overflow-hidden">
@@ -104,7 +104,7 @@
 
     {{-- Doctor Applications --}}
     @if($user->doctorApplications->count())
-    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <h3 class="text-sm font-semibold text-gray-900 mb-4">Doctor Applications</h3>
         <div class="space-y-3">
             @foreach($user->doctorApplications as $app)
@@ -132,7 +132,7 @@
 
     {{-- Crisis Reports --}}
     @if($user->crisisReports->count())
-    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <h3 class="text-sm font-semibold text-gray-900 mb-4">Crisis Reports <span class="text-red-500">({{ $user->crisisReports->count() }})</span></h3>
         <div class="space-y-3">
             @foreach($user->crisisReports->take(3) as $report)

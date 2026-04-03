@@ -5,15 +5,15 @@
 @section('content')
 <div class="space-y-6">
     {{-- Tabs --}}
-    <div class="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 w-fit">
-        <button id="tab-upcoming" onclick="switchTab('upcoming')" class="tab-btn px-5 py-2 rounded-lg text-sm font-medium transition-all bg-green-600 text-gray-900">Upcoming</button>
-        <button id="tab-past"     onclick="switchTab('past')"     class="tab-btn px-5 py-2 rounded-lg text-sm font-medium transition-all text-gray-500 hover:text-gray-900">Past</button>
+    <div class="flex gap-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-1 w-fit">
+        <button id="tab-upcoming" onclick="switchTab('upcoming')" class="tab-btn px-5 py-2 rounded-xl text-sm font-medium transition-all bg-green-600 text-white">Upcoming</button>
+        <button id="tab-past"     onclick="switchTab('past')"     class="tab-btn px-5 py-2 rounded-xl text-sm font-medium transition-all text-gray-500 hover:text-gray-900 hover:bg-gray-50">Past</button>
     </div>
 
     {{-- Upcoming --}}
     <div id="panel-upcoming" class="space-y-3">
         @forelse($upcoming as $appt)
-        <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div class="flex items-start gap-4">
                 <div class="w-12 h-12 bg-green-700/30 rounded-xl flex items-center justify-center text-green-700 font-bold text-lg flex-shrink-0">
                     {{ strtoupper(substr($appt->doctor->fname ?? '?', 0, 1)) }}
@@ -39,7 +39,7 @@
             </div>
         </div>
         @empty
-        <div class="bg-white border border-gray-200 rounded-xl p-10 text-center">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
             <p class="text-gray-500 text-sm">No upcoming appointments.</p>
             <a href="{{ route('patient.doctors.index') }}" class="mt-3 inline-block bg-green-600 hover:bg-green-700 text-gray-900 text-sm px-5 py-2.5 rounded-lg transition-colors">Find a Doctor</a>
         </div>
@@ -49,7 +49,7 @@
     {{-- Past --}}
     <div id="panel-past" class="space-y-3 hidden">
         @forelse($past as $appt)
-        <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 opacity-80">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 opacity-80">
             <div class="flex items-start gap-4">
                 <div class="w-12 h-12 bg-gray-700 rounded-xl flex items-center justify-center text-gray-500 font-bold text-lg flex-shrink-0">
                     {{ strtoupper(substr($appt->doctor->fname ?? '?', 0, 1)) }}
@@ -67,7 +67,7 @@
             </div>
         </div>
         @empty
-        <div class="bg-white border border-gray-200 rounded-xl p-10 text-center">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
             <p class="text-gray-500 text-sm">No past appointments.</p>
         </div>
         @endforelse
@@ -82,7 +82,7 @@ function switchTab(tab) {
         document.getElementById('panel-' + t).classList.toggle('hidden', t !== tab);
         const btn = document.getElementById('tab-' + t);
         btn.classList.toggle('bg-green-600', t === tab);
-        btn.classList.toggle('text-gray-900', t === tab);
+        btn.classList.toggle('text-white', t === tab);
         btn.classList.toggle('text-gray-500', t !== tab);
     });
 }
