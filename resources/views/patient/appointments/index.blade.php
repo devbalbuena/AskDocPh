@@ -20,15 +20,22 @@
                 </div>
                 <div>
                     <p class="text-gray-900 font-semibold">Dr. {{ $appt->doctor->display_name ?? 'Unknown' }}</p>
-                    <p class="text-gray-500 text-sm mt-0.5">{{ \Carbon\Carbon::parse($appt->appointment_date)->format('D, M d Y') }} • {{ substr($appt->start_time, 0, 5) }}–{{ substr($appt->end_time, 0, 5) }}</p>
-                    <p class="text-gray-500 text-xs mt-1 capitalize">{{ $appt->type }}</p>
+                    <p class="text-gray-500 text-sm mt-0.5">{{ \Carbon\Carbon::parse($appt->appointment_date)->format('D, M d Y') }} • {{ \Carbon\Carbon::parse($appt->start_time)->format('g:i A') }} – {{ \Carbon\Carbon::parse($appt->end_time)->format('g:i A') }}</p>
+                    <p class="text-gray-500 text-xs mt-1 capitalize">{{ $appt->type === 'in_person' ? 'In-Person' : 'Online / Video Call' }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
                 <span class="{{ $appt->status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }} text-xs px-3 py-1 rounded-full capitalize font-medium">
                     {{ $appt->status }}
                 </span>
-                <a href="{{ route('patient.appointments.show', $appt) }}" class="bg-gray-700 hover:bg-gray-600 text-gray-900 text-sm px-4 py-2 rounded-lg transition-colors">View</a>
+                <a href="{{ route('patient.appointments.show', $appt) }}" class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg transition-colors">View</a>
+                @if(in_array($appt->status, ['pending', 'confirmed']))
+                <form method="POST" action="{{ route('patient.appointments.cancel', $appt) }}"
+                      onsubmit="return confirm('Are you sure you want to cancel this appointment? This action cannot be undone.')">
+                    @csrf
+                    <button type="submit" class="bg-red-50 text-red-600 border border-red-200 text-sm px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors">Cancel</button>
+                </form>
+                @endif
             </div>
         </div>
         @empty
@@ -56,7 +63,7 @@
                 <span class="{{ $appt->status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700' }} text-xs px-3 py-1 rounded-full capitalize font-medium">
                     {{ $appt->status }}
                 </span>
-                <a href="{{ route('patient.appointments.show', $appt) }}" class="bg-gray-700 hover:bg-gray-600 text-gray-900 text-sm px-4 py-2 rounded-lg transition-colors">View</a>
+                <a href="{{ route('patient.appointments.show', $appt) }}" class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg transition-colors">View</a>
             </div>
         </div>
         @empty

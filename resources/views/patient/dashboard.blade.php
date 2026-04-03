@@ -6,22 +6,29 @@
 <div class="space-y-6">
 
     {{-- Welcome Card --}}
-    <div class="bg-gradient-to-br from-purple-900/40 to-gray-800 border border-green-200 rounded-2xl shadow-sm border border-gray-100 p-6">
+    <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl shadow-sm p-6 mb-4">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-500 text-sm">Good {{ now()->hour < 12 ? 'morning' : (now()->hour < 18 ? 'afternoon' : 'evening') }},</p>
-                <h2 class="text-2xl font-bold text-gray-900 mt-0.5">{{ auth()->user()->display_name }} 👋</h2>
+                <h2 class="text-2xl font-bold text-white mt-0.5">{{ $greeting }}, {{ auth()->user()->fname }}! 👋</h2>
                 @if($todayAffirmation)
-                <p class="text-green-700 text-sm mt-3 italic">"{{ $todayAffirmation->quote }}"</p>
+                <p class="text-green-100 text-sm mt-3 italic">"{{ $todayAffirmation->quote }}"</p>
                 @if($todayAffirmation->author)
-                <p class="text-gray-500 text-xs mt-1">— {{ $todayAffirmation->author }}</p>
+                <p class="text-green-200 text-xs mt-1">— {{ $todayAffirmation->author }}</p>
                 @endif
                 @endif
             </div>
-            <div class="hidden md:flex w-20 h-20 rounded-full bg-green-100 border border-green-200 items-center justify-center">
-                <span class="text-3xl font-black text-green-600">{{ strtoupper(substr(auth()->user()->fname, 0, 1)) }}</span>
+            <div class="hidden md:flex w-20 h-20 rounded-full bg-white/20 border border-white/30 items-center justify-center backdrop-blur-sm">
+                <span class="text-3xl font-black text-white">{{ strtoupper(substr(auth()->user()->fname, 0, 1)) }}</span>
             </div>
         </div>
+    </div>
+
+    {{-- Prominent Find a Doctor Action --}}
+    <div class="mb-6">
+        <a href="{{ route('patient.doctors.index') }}" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-medium inline-flex items-center gap-2 transition-colors shadow-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+            Find a Doctor
+        </a>
     </div>
 
     {{-- Stats Row --}}
@@ -70,7 +77,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium text-gray-900 truncate">Dr. {{ $appt->doctor->display_name ?? 'Unknown' }}</p>
-                    <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($appt->appointment_date)->format('M d') }} • {{ substr($appt->start_time, 0, 5) }}</p>
+                    <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($appt->appointment_date)->format('M d') }} • {{ $appt->formatted_time }}</p>
                 </div>
                 <span class="{{ $appt->status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }} text-xs px-2 py-0.5 rounded-full capitalize">
                     {{ $appt->status }}
@@ -79,10 +86,6 @@
             @empty
             <p class="text-gray-500 text-sm text-center py-4">No upcoming appointments</p>
             @endforelse
-            <a href="{{ route('patient.doctors.index') }}" class="mt-4 w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-gray-900 text-sm font-medium py-2.5 rounded-lg transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                Book Appointment
-            </a>
         </div>
 
         {{-- Recent Feed Posts --}}
@@ -118,15 +121,15 @@
     <div class="bg-white border border-gray-200 rounded-xl shadow-sm border border-gray-100 p-5">
         <h3 class="text-base font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div class="flex flex-wrap gap-3">
-            <a href="{{ route('patient.doctors.index') }}" class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-gray-900 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors">
+            <a href="{{ route('patient.doctors.index') }}" class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
                 Find a Doctor
             </a>
-            <a href="{{ url('/feed') }}" class="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-gray-900 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors">
+            <a href="{{ url('/feed') }}" class="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
                 Go to Feed
             </a>
-            <button id="crisis-btn" class="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-gray-900 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors">
+            <button id="crisis-btn" class="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                 Crisis Support
             </button>

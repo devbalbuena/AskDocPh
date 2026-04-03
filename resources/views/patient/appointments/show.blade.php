@@ -30,7 +30,7 @@
                 </div>
                 <div>
                     <p class="text-gray-900 font-semibold text-lg">Dr. {{ $appointment->doctor->display_name ?? 'Unknown' }}</p>
-                    <p class="text-gray-500 text-sm capitalize">{{ $appointment->type }} Consultation</p>
+                    <p class="text-gray-500 text-sm capitalize">{{ $appointment->type === 'in_person' ? 'In-Person' : 'Online / Video Call' }} Consultation</p>
                 </div>
             </div>
 
@@ -41,13 +41,13 @@
                 </div>
                 <div class="bg-gray-50/60 rounded-xl p-4">
                     <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Time</p>
-                    <p class="text-gray-900 font-medium">{{ substr($appointment->start_time, 0, 5) }} – {{ substr($appointment->end_time, 0, 5) }}</p>
+                    <p class="text-gray-900 font-medium">{{ \Carbon\Carbon::parse($appointment->start_time)->format('g:i A') }} – {{ \Carbon\Carbon::parse($appointment->end_time)->format('g:i A') }}</p>
                 </div>
             </div>
 
             <div class="bg-gray-50/60 rounded-xl p-4">
                 <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Reason</p>
-                <p class="text-gray-900 text-sm">{{ $appointment->reason }}</p>
+                <p class="text-gray-900 text-sm">{{ ucfirst($appointment->reason ?? '') }}</p>
             </div>
 
             @if($appointment->meeting_link && $appointment->status === 'confirmed')
@@ -80,7 +80,7 @@
         @if(in_array($appointment->status, ['pending', 'confirmed']))
         <div class="px-6 pb-6">
             <form method="POST" action="{{ route('patient.appointments.cancel', $appointment) }}"
-                  onsubmit="return confirm('Are you sure you want to cancel this appointment?')">
+                  onsubmit="return confirm('Are you sure you want to cancel this appointment? This action cannot be undone.')">
                 @csrf
                 <button type="submit" class="w-full bg-red-50 hover:bg-red-600/40 border border-red-500/30 text-red-400 py-3 rounded-xl text-sm font-medium transition-colors">
                     Cancel Appointment

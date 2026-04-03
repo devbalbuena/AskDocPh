@@ -13,7 +13,18 @@
             </div>
             <div class="flex-1">
                 <textarea id="post-content" rows="3" placeholder="Share your thoughts, experiences, or questions..."
-                          class="w-full bg-gray-50/60 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:border-green-500 resize-none transition-colors"></textarea>
+                          class="w-full bg-gray-50/60 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors" style="min-height: 80px; resize: none; overflow: hidden;"></textarea>
+
+                {{-- Anonymous Toggle --}}
+                <div class="mt-2 flex items-center justify-between">
+                    <label class="flex items-center gap-1.5 text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700 transition-colors">
+                        <input type="checkbox" id="post-anonymous-toggle" class="appearance-none w-8 h-4 bg-gray-200 rounded-full relative transition-colors checked:bg-green-500 before:content-[''] before:absolute before:w-3 before:h-3 before:bg-white before:rounded-full before:top-0.5 before:left-0.5 before:transition-transform checked:before:translate-x-4 shadow-inner" onchange="document.getElementById('post-anonymous-input').value = this.checked ? '1' : '0'; document.getElementById('post-anonymous-note').classList.toggle('hidden', !this.checked);">
+                        <svg class="w-3 h-3 text-gray-400 lock-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-top:-1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        Post Anonymously
+                    </label>
+                    <span id="post-anonymous-note" class="text-[10px] text-gray-400 hidden italic">Your name will be hidden from this post</span>
+                    <input type="hidden" id="post-anonymous-input" name="is_anonymous" value="0">
+                </div>
 
                 {{-- Media Preview --}}
                 <div id="media-preview" class="hidden mt-2 flex gap-2 flex-wrap"></div>
@@ -21,6 +32,17 @@
                 {{-- Link Input --}}
                 <div id="link-input-wrapper" class="hidden mt-2">
                     <input type="url" id="post-link" placeholder="https://..." class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:border-green-500">
+                </div>
+
+                {{-- Link Preview Card --}}
+                <div id="link-preview-card" class="hidden mt-2 border border-gray-200 bg-gray-50 rounded-xl p-3 flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p id="link-preview-domain" class="text-sm font-semibold text-gray-900 truncate"></p>
+                        <p id="link-preview-url" class="text-xs text-gray-500 truncate"></p>
+                    </div>
                 </div>
 
                 <input type="file" id="media-input" multiple accept="image/*,video/*" class="hidden">
@@ -56,11 +78,28 @@
             $emojiMap     = ['heart' => '❤️', 'sad' => '😢', 'wow' => '😮', 'haha' => '😂', 'like' => '👍'];
             $currentEmoji = $userReaction ? ($emojiMap[$userReaction->reaction_type] ?? '❤️') : '❤️';
             $reacted      = $userReaction !== null;
+
+            $isAnonymous = str_starts_with($post->text_content ?? '', '[ANONYMOUS]');
+            $textContent = $isAnonymous ? substr($post->text_content, 11) : $post->text_content;
         @endphp
         <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-5" id="post-{{ $post->id }}">
 
             {{-- Post header --}}
             <div class="flex items-center gap-3 mb-3">
+                @if($isAnonymous)
+                <div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-500 flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="text-sm font-semibold text-gray-900">
+                            Anonymous
+                        </span>
+                        <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">Patient</span>
+                    </div>
+                    <p class="text-xs text-gray-500">{{ $post->created_at->diffForHumans() }}</p>
+                </div>
+                @else
                 <a href="{{ url('/users/' . ($post->user->username ?? '')) }}"
                    class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center text-sm font-bold text-green-700 flex-shrink-0 hover:ring-2 hover:ring-green-400 transition">
                     {{ strtoupper(substr($post->user->fname ?? 'U', 0, 1)) }}
@@ -74,13 +113,14 @@
                         @if($post->user->role === 'admin')
                             <span class="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full">Announcement</span>
                         @elseif($post->user->role === 'doctor')
-                            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">Doctor</span>
+                            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full flex items-center"><svg class="w-3 h-3 text-green-600 inline mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> ✓ Verified Doctor</span>
                         @else
                             <span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">Patient</span>
                         @endif
                     </div>
                     <p class="text-xs text-gray-500">{{ $post->created_at->diffForHumans() }}</p>
                 </div>
+                @endif
 
                 {{-- Three-dot menu --}}
                 <div class="relative post-menu-wrapper flex-shrink-0">
@@ -108,8 +148,8 @@
             </div>
 
             {{-- Post body --}}
-            @if($post->text_content)
-            <p class="text-sm text-gray-800 leading-relaxed mb-3">{{ $post->text_content }}</p>
+            @if($textContent)
+            <p class="text-sm text-gray-800 leading-relaxed mb-3">{{ $textContent }}</p>
             @endif
 
             {{-- Post media --}}
@@ -286,6 +326,7 @@ function submitPost() {
 
     const formData = new FormData();
     formData.append('text_content', content);
+    formData.append('is_anonymous', document.getElementById('post-anonymous-input')?.value || '0');
     formData.append('post_type', mediaFiles.length > 0 ? 'media' : (link ? 'link' : 'text'));
     if (link) formData.append('link_url', link);
     Array.from(mediaFiles).forEach(f => formData.append('media[]', f));
@@ -447,6 +488,31 @@ document.addEventListener('keydown', e => {
 // ── Comment toggle & submit ─────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
     console.log('feed js loaded'); // DEBUG: confirms script runs after Vite/axios
+
+    // Auto-resizing textarea
+    const textarea = document.getElementById('post-content');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    }
+
+    // Link preview extraction
+    const linkInput = document.getElementById('post-link');
+    const previewCard = document.getElementById('link-preview-card');
+    if (linkInput && previewCard) {
+        linkInput.addEventListener('input', function() {
+            try {
+                const url = new URL(this.value);
+                document.getElementById('link-preview-domain').textContent = url.hostname;
+                document.getElementById('link-preview-url').textContent = this.value.length > 60 ? this.value.substring(0, 60) + '...' : this.value;
+                previewCard.classList.remove('hidden');
+            } catch (e) {
+                previewCard.classList.add('hidden');
+            }
+        });
+    }
 
     document.querySelectorAll('.comment-toggle-btn').forEach(btn => {
         btn.addEventListener('click', function () {

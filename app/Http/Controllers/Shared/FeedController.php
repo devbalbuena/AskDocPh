@@ -41,10 +41,15 @@ class FeedController extends Controller
             'media.*'      => ['file', 'mimes:jpg,jpeg,png,gif,mp4,webm', 'max:51200'],
         ]);
 
+        $textContent = $request->text_content;
+        if ($request->input('is_anonymous') == '1' && !empty($textContent)) {
+            $textContent = '[ANONYMOUS]' . $textContent;
+        }
+
         $post = Post::create([
             'user_id'      => auth()->id(),
             'post_type'    => $request->post_type ?? 'text',
-            'text_content' => $request->text_content,
+            'text_content' => $textContent,
             'link_url'     => $request->link_url,
         ]);
 

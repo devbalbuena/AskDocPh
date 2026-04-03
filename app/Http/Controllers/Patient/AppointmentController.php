@@ -43,13 +43,18 @@ class AppointmentController extends Controller
     {
         $request->validate([
             'start_time' => 'required|date_format:H:i,H:i:s',
-            'end_time' => 'required|date_format:H:i,H:i:s',
+            'end_time' => 'nullable|date_format:H:i,H:i:s',
             'reason' => 'required|string|min:10|max:500',
             'appointment_date' => 'required|date|after:today',
             'doctor_id' => 'required|exists:users,id',
             'schedule_id' => 'required|exists:doctor_schedules,id',
             'type' => 'required|in:online,in_person',
         ]);
+
+        $schedule = DoctorSchedule::find($request->schedule_id);
+        if (!$schedule) {
+            return back()->withErrors(['schedule_id' => 'Invalid schedule.']);
+        }
 
         // Prevent double-booking same slot
         $clash = Appointment::where('doctor_id', $request->doctor_id)
@@ -62,13 +67,17 @@ class AppointmentController extends Controller
             return back()->withErrors(['appointment_date' => 'This time slot is already booked. Please choose another.']);
         }
 
+        $endTime = \Carbon\Carbon::parse($request->start_time)
+            ->addMinutes($schedule->slot_duration_minutes)
+            ->format('H:i:s');
+
         Appointment::create([
             'patient_id'       => auth()->id(),
             'doctor_id'        => $request->doctor_id,
             'schedule_id'      => $request->schedule_id,
             'appointment_date' => $request->appointment_date,
             'start_time'       => $request->start_time,
-            'end_time'         => $request->end_time,
+            'end_time'         => $endTime,
             'type'             => $request->type,
             'reason'           => $request->reason,
             'status'           => 'pending',

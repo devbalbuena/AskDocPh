@@ -15,6 +15,13 @@ class PatientDashboardController extends Controller
     {
         $user = auth()->user();
 
+        $hour = now('Asia/Manila')->hour;
+        $greeting = match(true) {
+            $hour < 12 => 'Good morning',
+            $hour < 17 => 'Good afternoon',
+            default    => 'Good evening',
+        };
+
         $upcomingAppointments = Appointment::where('patient_id', $user->id)
             ->whereIn('status', ['pending', 'confirmed'])
             ->where('appointment_date', '>=', today())
@@ -22,7 +29,11 @@ class PatientDashboardController extends Controller
             ->orderBy('appointment_date')
             ->orderBy('start_time')
             ->limit(5)
-            ->get();
+            ->get()
+            ->map(function($apt) {
+                $apt->formatted_time = \Carbon\Carbon::parse($apt->start_time)->format('g:i A');
+                return $apt;
+            });
 
         $bookmarksCount = $user->bookmarks()->count();
 
@@ -42,6 +53,7 @@ class PatientDashboardController extends Controller
 
         return view('patient.dashboard', compact(
             'user',
+            'greeting',
             'upcomingAppointments',
             'bookmarksCount',
             'unreadNotifications',
