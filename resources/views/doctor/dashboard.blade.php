@@ -4,6 +4,121 @@
 
 @section('content')
 <div class="space-y-6">
+
+    @if(!auth()->user()->isVerifiedDoctor() && !auth()->user()->isDemo())
+    {{-- Status Tracker --}}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 mb-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-6">Verification Progress</h3>
+        
+        @php
+            $user = auth()->user();
+            
+            $profInfo = [];
+            if ($user->bio) {
+                $decoded = json_decode($user->bio, true);
+                if (is_array($decoded)) {
+                    $profInfo = $decoded;
+                }
+            }
+            
+            // Define conditions
+            $step1 = true; // Always registered
+            $step2 = !empty($profInfo['specialization']) && !empty($profInfo['prc_license']); // Profile completed
+            $step3 = $step2; // For AskDocPH, once profile is complete, they are considered under review if pending
+            $step4 = $user->doctor_status === 'approved';
+        @endphp
+
+        <div class="relative">
+            {{-- Connective Line --}}
+            <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200 md:hidden"></div>
+            <div class="hidden md:block absolute top-4 left-0 right-0 h-0.5 bg-gray-200" style="left: 12.5%; right: 12.5%;"></div>
+
+            <div class="flex flex-col md:flex-row justify-between gap-6 relative z-10">
+                
+                {{-- Step 1 --}}
+                <div class="flex md:flex-col items-start md:items-center gap-4 md:gap-2 relative w-full md:w-1/4">
+                    <div class="hidden md:block absolute top-4 right-1/2 w-1/2 h-0.5 bg-green-500"></div>
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 {{ $step1 ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-gray-300 text-gray-400' }} transition-colors relative z-10">
+                        @if($step1)
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        @else
+                            <span class="text-sm font-semibold">1</span>
+                        @endif
+                    </div>
+                    <div class="md:text-center mt-1 md:mt-0">
+                        <p class="text-sm font-bold {{ $step1 ? 'text-gray-900' : 'text-gray-500' }}">Registered</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Account created successfully.</p>
+                    </div>
+                </div>
+
+                {{-- Step 2 --}}
+                <div class="flex md:flex-col items-start md:items-center gap-4 md:gap-2 relative w-full md:w-1/4">
+                    <div class="hidden md:block absolute top-4 left-0 w-1/2 h-0.5 {{ $step1 ? 'bg-green-500' : 'bg-gray-200' }} -z-10"></div>
+                    <div class="hidden md:block absolute top-4 right-1/2 w-1/2 h-0.5 {{ $step2 ? 'bg-green-500' : 'bg-gray-200' }} -z-10"></div>
+                    
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 {{ $step2 ? 'bg-green-500 border-green-500 text-white' : ($step1 ? 'bg-green-50 border-green-500 text-green-600' : 'bg-white border-gray-300 text-gray-400') }} transition-colors relative z-10">
+                        @if($step2)
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        @elseif($step1)
+                            <div class="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div>
+                        @else
+                            <span class="text-sm font-semibold">2</span>
+                        @endif
+                    </div>
+                    <div class="md:text-center mt-1 md:mt-0">
+                        <p class="text-sm font-bold {{ $step2 || $step1 ? 'text-gray-900' : 'text-gray-500' }}">Complete Profile</p>
+                        <p class="text-xs mt-0.5 {{ $step2 ? 'text-gray-500' : 'text-gray-600 font-medium' }}">
+                            @if($step2)
+                                Professional details added.
+                            @else
+                                <a href="{{ route('profile.edit') }}" class="text-green-600 hover:text-green-700 underline">Add PRC License & Details →</a>
+                            @endif
+                        </p>
+                    </div>
+                </div>
+
+                {{-- Step 3 --}}
+                <div class="flex md:flex-col items-start md:items-center gap-4 md:gap-2 relative w-full md:w-1/4">
+                    <div class="hidden md:block absolute top-4 left-0 w-1/2 h-0.5 {{ $step2 ? 'bg-green-500' : 'bg-gray-200' }} -z-10"></div>
+                    <div class="hidden md:block absolute top-4 right-1/2 w-1/2 h-0.5 {{ $step3 ? 'bg-green-500' : 'bg-gray-200' }} -z-10"></div>
+                    
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 {{ $step4 ? 'bg-green-500 border-green-500 text-white' : ($step3 && !$step4 ? 'bg-yellow-100 border-yellow-500 text-yellow-600' : 'bg-white border-gray-300 text-gray-400') }} transition-colors relative z-10">
+                        @if($step4)
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        @elseif($step3)
+                            <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        @else
+                            <span class="text-sm font-semibold">3</span>
+                        @endif
+                    </div>
+                    <div class="md:text-center mt-1 md:mt-0">
+                        <p class="text-sm font-bold {{ $step3 ? 'text-gray-900' : 'text-gray-500' }}">Under Review</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Admin verifies your license.</p>
+                    </div>
+                </div>
+
+                {{-- Step 4 --}}
+                <div class="flex md:flex-col items-start md:items-center gap-4 md:gap-2 relative w-full md:w-1/4">
+                    <div class="hidden md:block absolute top-4 left-0 w-1/2 h-0.5 {{ $step3 ? 'bg-green-500' : 'bg-gray-200' }} -z-10"></div>
+                    
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 {{ $step4 ? 'bg-green-500 border-green-500 text-white' : 'bg-white border-gray-300 text-gray-400' }} transition-colors relative z-10">
+                        @if($step4)
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        @else
+                            <span class="text-sm font-semibold">4</span>
+                        @endif
+                    </div>
+                    <div class="md:text-center mt-1 md:mt-0">
+                        <p class="text-sm font-bold {{ $step4 ? 'text-gray-900' : 'text-gray-500' }}">Verified Doctor</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Account fully activated.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Welcome --}}
     <div class="bg-gradient-to-br from-green-600 to-green-800 rounded-3xl shadow-md p-8 relative overflow-hidden mb-6">
         <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-10 pointer-events-none">

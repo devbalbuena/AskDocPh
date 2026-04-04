@@ -52,6 +52,8 @@ class AdminDoctorApplicationController extends Controller
             'doctor_status' => 'approved',
         ]);
 
+        \App\Services\AuditService::log('approve_application', "Approved doctor application for {$application->user->display_name} (User ID: {$application->user_id})");
+
         return redirect()->route('admin.doctor-applications.index')
             ->with('success', "Application for {$application->user->display_name} has been approved.");
     }
@@ -71,6 +73,8 @@ class AdminDoctorApplicationController extends Controller
         ]);
 
         $application->user->update(['doctor_status' => 'rejected']);
+
+        \App\Services\AuditService::log('reject_application', "Rejected doctor application for {$application->user->display_name} (User ID: {$application->user_id}) due to: {$request->admin_notes}");
 
         return redirect()->route('admin.doctor-applications.index')
             ->with('success', 'Application rejected.');

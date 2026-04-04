@@ -44,6 +44,8 @@ class AdminUserController extends Controller
     {
         $user->delete();
 
+        \App\Services\AuditService::log('delete_user', "Deactivated user {$user->display_name} (ID: {$user->id})");
+
         return redirect()->route('admin.users.index')
             ->with('success', "User {$user->display_name} has been deactivated.");
     }

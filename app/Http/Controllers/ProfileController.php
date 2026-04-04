@@ -173,4 +173,39 @@ class ProfileController extends Controller
             'enabled' => $user->two_factor_enabled
         ]);
     }
+    /**
+     * Show the user's security settings.
+     */
+    public function security(): View
+    {
+        $user = auth()->user();
+        $layout = $this->layout();
+
+        return view('profile.security', compact('user', 'layout'));
+    }
+
+    /**
+     * Delete the user's account.
+     */
+    public function destroy(Request $request): RedirectResponse
+    {
+        $request->validateWithBag('userDeletion', [
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = $request->user();
+
+        if ($user->isDemo()) {
+            return back()->with('error', 'Demo accounts cannot be deleted.');
+        }
+
+        \Illuminate\Support\Facades\Auth::guard('web')->logout();
+
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
+    }
 }

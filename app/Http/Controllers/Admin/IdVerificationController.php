@@ -55,6 +55,8 @@ class IdVerificationController extends Controller
             $msg = "Patient {$user->display_name}'s ID has been rejected.";
         }
 
+        \App\Services\AuditService::log('id_verification_' . $request->action, $msg);
+
         return back()->with('success', $msg);
     }
 }

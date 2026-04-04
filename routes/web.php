@@ -41,6 +41,8 @@ Route::middleware(['auth', 'verified.email'])->group(function () {
     // Breeze compatibility alias so existing sidebar links still work
     Route::get('/profile/edit', [ProfileController::class, 'show'])->name('profile.edit');
     Route::post('/profile/toggle-2fa', [ProfileController::class, 'toggle2FA'])->name('profile.toggle-2fa');
+    Route::get('/profile/security', [ProfileController::class, 'security'])->name('profile.security');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 
@@ -212,6 +214,8 @@ Route::middleware(['auth', 'verified.email', 'role:admin'])
         // Users
         Route::resource('/users', AdminUserController::class)->only(['index', 'show', 'destroy']);
 
+        // Audit Logs
+        Route::get('/audit-logs', [\App\Http\Controllers\Admin\AdminAuditLogController::class, 'index'])->name('audit-logs.index');
         // Doctor Applications
         Route::resource('/doctor-applications', AdminDoctorApplicationController::class)->only(['index', 'show']);
         Route::post('/doctor-applications/{application}/approve', [AdminDoctorApplicationController::class, 'approve'])->name('doctor-applications.approve');
