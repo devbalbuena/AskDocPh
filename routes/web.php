@@ -34,7 +34,7 @@ Route::get('/', [\App\Http\Controllers\LandingController::class, 'index'])->name
 Route::post('/contact', [\App\Http\Controllers\LandingController::class, 'contact'])->name('contact');
 
 // ─── Profile ────────────────────────────────────────────────────────────────────────────────
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified.email'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo');
@@ -44,7 +44,7 @@ Route::middleware('auth')->group(function () {
 
 
 // ─── Shared Authenticated Routes ──────────────────────────────────────────────
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified.email'])->group(function () {
     // Feed
     Route::get('/feed', [FeedController::class, 'index'])->name('feed');
     Route::post('/posts', [FeedController::class, 'store'])->name('posts.store');
@@ -112,7 +112,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // ─── Patient Routes ───────────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:patient'])
+Route::middleware(['auth', 'verified.email', 'role:patient'])
     ->prefix('patient')
     ->name('patient.')
     ->group(function () {
@@ -145,7 +145,7 @@ Route::middleware(['auth', 'role:patient'])
     });
 
 // ─── Doctor Routes ────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:doctor'])
+Route::middleware(['auth', 'verified.email', 'role:doctor'])
     ->prefix('doctor')
     ->name('doctor.')
     ->group(function () {
@@ -188,7 +188,7 @@ Route::middleware(['auth', 'role:doctor'])
     });
 
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:admin'])
+Route::middleware(['auth', 'verified.email', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {

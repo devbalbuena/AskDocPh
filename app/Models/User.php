@@ -6,10 +6,11 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
@@ -64,6 +65,21 @@ class User extends Authenticatable
     }
 
     // ─── Computed helpers ─────────────────────────────
+
+    public function isDemo(): bool
+    {
+        return in_array($this->email, [
+            'admin@askdocph.com',
+            'doctor@askdocph.com',
+            'patient@askdocph.com',
+        ]);
+    }
+
+    public function isVerifiedDoctor(): bool
+    {
+        return $this->role === 'doctor'
+            && $this->doctor_status === 'approved';
+    }
 
     public function getFullNameAttribute(): string
     {

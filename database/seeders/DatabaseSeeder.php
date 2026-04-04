@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
                 'lname'    => 'Patient',
                 'role'     => 'patient',
                 'doctor_status' => 'none',
+                'email_verified_at' => now(),
             ]
         );
 
@@ -42,6 +43,7 @@ class DatabaseSeeder extends Seeder
                 'lname'    => 'Doctor',
                 'role'     => 'doctor',
                 'doctor_status' => 'approved',
+                'email_verified_at' => now(),
             ]
         );
 

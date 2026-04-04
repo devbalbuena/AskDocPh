@@ -26,6 +26,7 @@ class AdminSeeder extends Seeder
                 'bday'          => null,
                 'role'          => 'admin',           // Crucial to set the role!
                 'doctor_status' => 'none',
+                'email_verified_at' => now(),
             ]
         );
     }
