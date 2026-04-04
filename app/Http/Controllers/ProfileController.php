@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -151,5 +152,25 @@ class ProfileController extends Controller
 
         return redirect()->route('profile.edit')
             ->with('success', 'Profile photo updated.');
+    }
+
+    /**
+     * Toggle Two-Factor Authentication.
+     */
+    public function toggle2FA(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->isDemo()) {
+            return response()->json(['error' => 'Demo accounts cannot toggle 2FA.'], 403);
+        }
+
+        $user->two_factor_enabled = !$user->two_factor_enabled;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'enabled' => $user->two_factor_enabled
+        ]);
     }
 }

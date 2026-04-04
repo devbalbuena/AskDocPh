@@ -70,10 +70,20 @@
                         <span class="ml-2 flex-shrink-0 w-2 h-2 rounded-full bg-green-500"></span>
                         @endif
                     </div>
-                    <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full capitalize inline-block mt-0.5
-                        {{ ($other['role'] ?? '') === 'doctor' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600' }}">
-                        {{ $other['role'] ?? '' }}
-                    </span>
+                    <div>
+                        <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full capitalize inline-block mt-0.5
+                            {{ ($other['role'] ?? '') === 'doctor' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600' }}">
+                            {{ $other['role'] ?? '' }}
+                        </span>
+                        @if(!empty($other['is_verified_doctor']))
+                        <span class="inline-flex items-center gap-0.5 bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded-full font-semibold ml-1">
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Verified
+                        </span>
+                        @endif
+                    </div>
                 </div>
             </a>
             @empty

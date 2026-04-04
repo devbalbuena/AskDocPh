@@ -40,6 +40,7 @@ Route::middleware(['auth', 'verified.email'])->group(function () {
     Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo');
     // Breeze compatibility alias so existing sidebar links still work
     Route::get('/profile/edit', [ProfileController::class, 'show'])->name('profile.edit');
+    Route::post('/profile/toggle-2fa', [ProfileController::class, 'toggle2FA'])->name('profile.toggle-2fa');
 });
 
 
@@ -74,38 +75,41 @@ Route::middleware(['auth', 'verified.email'])->group(function () {
     Route::get('/users/{user}/followers', [FollowController::class, 'followers'])->name('users.followers');
     Route::get('/users/{user}/following', [FollowController::class, 'following'])->name('users.following');
 
-    // Messaging — IMPORTANT: literal routes BEFORE wildcard {conversation}
-    Route::get('/messages/unread-count', [MessagingController::class, 'unreadCount'])->name('messages.unread-count');
-    Route::get('/messages', [MessagingController::class, 'index'])->name('messages.index');
-    Route::post('/messages/start', [MessagingController::class, 'start'])->name('messages.start');
-    Route::get('/messages/{conversation}/poll', [MessagingController::class, 'poll'])->name('messages.poll');
-    Route::post('/messages/{conversation}/send', [MessagingController::class, 'send'])->name('messages.send');
-    Route::get('/messages/{conversation}', [MessagingController::class, 'show'])->name('messages.show');
+    // Verified-only Shared Routes
+    Route::middleware('verified.id')->group(function () {
+        // Messaging — IMPORTANT: literal routes BEFORE wildcard {conversation}
+        Route::get('/messages/unread-count', [MessagingController::class, 'unreadCount'])->name('messages.unread-count');
+        Route::get('/messages', [MessagingController::class, 'index'])->name('messages.index');
+        Route::post('/messages/start', [MessagingController::class, 'start'])->name('messages.start');
+        Route::get('/messages/{conversation}/poll', [MessagingController::class, 'poll'])->name('messages.poll');
+        Route::post('/messages/{conversation}/send', [MessagingController::class, 'send'])->name('messages.send');
+        Route::get('/messages/{conversation}', [MessagingController::class, 'show'])->name('messages.show');
 
-    // (users/search moved above /users/{username} — see line above)
+        // Doctor Reviews
+        Route::post('/doctor-reviews', [DoctorReviewController::class, 'store'])->name('doctor-reviews.store');
 
-    // Doctor Reviews
-    Route::post('/doctor-reviews', [DoctorReviewController::class, 'store'])->name('doctor-reviews.store');
+        // Group Communities
+        Route::get('/communities', [GroupController::class, 'index'])->name('communities.index');
+        Route::get('/communities/create', [GroupController::class, 'create'])->name('communities.create');
+        Route::post('/communities', [GroupController::class, 'store'])->name('communities.store');
+        Route::get('/communities/{group}', [GroupController::class, 'show'])->name('communities.show');
+        Route::post('/communities/{group}/join', [GroupController::class, 'join'])->name('communities.join');
+        Route::post('/communities/{group}/leave', [GroupController::class, 'leave'])->name('communities.leave');
+        Route::post('/communities/{group}/post', [GroupController::class, 'createPost'])->name('communities.post');
+
+        // Help Requests
+        Route::get('/help-requests', [HelpRequestController::class, 'index'])->name('help-requests.index');
+        Route::get('/help-requests/create', [HelpRequestController::class, 'create'])->name('help-requests.create');
+        Route::post('/help-requests', [HelpRequestController::class, 'store'])->name('help-requests.store');
+        Route::get('/help-requests/{helpRequest}', [HelpRequestController::class, 'show'])->name('help-requests.show');
+        Route::post('/help-requests/{helpRequest}/accept', [HelpRequestController::class, 'accept'])->name('help-requests.accept');
+        Route::post('/help-requests/{helpRequest}/decline', [HelpRequestController::class, 'decline'])->name('help-requests.decline');
+        Route::post('/help-requests/{helpRequest}/resolve', [HelpRequestController::class, 'resolve'])->name('help-requests.resolve');
+        Route::post('/help-requests/{helpRequest}/message', [HelpRequestController::class, 'sendMessage'])->name('help-requests.message');
+    });
+
+    // You can still view reviews without being verified
     Route::get('/doctors/{doctor}/reviews', [DoctorReviewController::class, 'index'])->name('doctor-reviews.index');
-
-    // Group Communities
-    Route::get('/communities', [GroupController::class, 'index'])->name('communities.index');
-    Route::get('/communities/create', [GroupController::class, 'create'])->name('communities.create');
-    Route::post('/communities', [GroupController::class, 'store'])->name('communities.store');
-    Route::get('/communities/{group}', [GroupController::class, 'show'])->name('communities.show');
-    Route::post('/communities/{group}/join', [GroupController::class, 'join'])->name('communities.join');
-    Route::post('/communities/{group}/leave', [GroupController::class, 'leave'])->name('communities.leave');
-    Route::post('/communities/{group}/post', [GroupController::class, 'createPost'])->name('communities.post');
-
-    // Help Requests
-    Route::get('/help-requests', [HelpRequestController::class, 'index'])->name('help-requests.index');
-    Route::get('/help-requests/create', [HelpRequestController::class, 'create'])->name('help-requests.create');
-    Route::post('/help-requests', [HelpRequestController::class, 'store'])->name('help-requests.store');
-    Route::get('/help-requests/{helpRequest}', [HelpRequestController::class, 'show'])->name('help-requests.show');
-    Route::post('/help-requests/{helpRequest}/accept', [HelpRequestController::class, 'accept'])->name('help-requests.accept');
-    Route::post('/help-requests/{helpRequest}/decline', [HelpRequestController::class, 'decline'])->name('help-requests.decline');
-    Route::post('/help-requests/{helpRequest}/resolve', [HelpRequestController::class, 'resolve'])->name('help-requests.resolve');
-    Route::post('/help-requests/{helpRequest}/message', [HelpRequestController::class, 'sendMessage'])->name('help-requests.message');
 
     // Post Analytics
     Route::get('/profile/analytics', [PostAnalyticsController::class, 'index'])->name('profile.analytics');
@@ -118,30 +122,37 @@ Route::middleware(['auth', 'verified.email', 'role:patient'])
     ->group(function () {
         Route::get('/dashboard', [PatientDashboardController::class, 'index'])->name('dashboard');
 
-        // Appointments
-        Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments.index');
-        Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
-        Route::get('/appointments/{appointment}', [AppointmentController::class, 'show'])->name('appointments.show');
-        Route::post('/appointments/{appointment}/cancel', [AppointmentController::class, 'cancel'])->name('appointments.cancel');
+        // ID Verification
+        Route::get('/id-verification', [\App\Http\Controllers\Patient\IdVerificationController::class, 'show'])->name('id-verification.notice');
+        Route::post('/id-verification', [\App\Http\Controllers\Patient\IdVerificationController::class, 'store'])->name('id-verification.store');
 
-        // Doctors
-        Route::get('/doctors', [DoctorListController::class, 'index'])->name('doctors.index');
-        Route::get('/doctors/{doctor}/schedule', [DoctorListController::class, 'schedule'])->name('doctors.schedule');
+        // Verified Patient Routes
+        Route::middleware('verified.id')->group(function () {
+            // Appointments
+            Route::get('/appointments', [AppointmentController::class, 'index'])->name('appointments.index');
+            Route::post('/appointments', [AppointmentController::class, 'store'])->name('appointments.store');
+            Route::get('/appointments/{appointment}', [AppointmentController::class, 'show'])->name('appointments.show');
+            Route::post('/appointments/{appointment}/cancel', [AppointmentController::class, 'cancel'])->name('appointments.cancel');
 
-        // Bookmarks
-        Route::get('/bookmarks', [BookmarkController::class, 'index'])->name('bookmarks.index');
-        Route::post('/bookmarks/{post}/toggle', [BookmarkController::class, 'toggle'])->name('bookmarks.toggle');
+            // Doctors
+            Route::get('/doctors', [DoctorListController::class, 'index'])->name('doctors.index');
+            Route::get('/doctors/{doctor}/schedule', [DoctorListController::class, 'schedule'])->name('doctors.schedule');
 
-        // Crisis
-        Route::post('/crisis-reports', [CrisisReportController::class, 'store'])->name('crisis.store');
+            // Bookmarks
+            Route::get('/bookmarks', [BookmarkController::class, 'index'])->name('bookmarks.index');
+            Route::post('/bookmarks/{post}/toggle', [BookmarkController::class, 'toggle'])->name('bookmarks.toggle');
 
-        // Mood Tracker
-        Route::get('/mood', [MoodTrackerController::class, 'index'])->name('mood.index');
-        Route::post('/mood', [MoodTrackerController::class, 'store'])->name('mood.store');
-        Route::get('/mood/history', [MoodTrackerController::class, 'history'])->name('mood.history');
+            // Crisis
+            Route::post('/crisis-reports', [CrisisReportController::class, 'store'])->name('crisis.store');
 
-        // Doctor reviews from appointment
-        Route::post('/appointments/{appointment}/review', [DoctorReviewController::class, 'store'])->name('appointments.review');
+            // Mood Tracker
+            Route::get('/mood', [MoodTrackerController::class, 'index'])->name('mood.index');
+            Route::post('/mood', [MoodTrackerController::class, 'store'])->name('mood.store');
+            Route::get('/mood/history', [MoodTrackerController::class, 'history'])->name('mood.history');
+
+            // Doctor reviews from appointment
+            Route::post('/appointments/{appointment}/review', [DoctorReviewController::class, 'store'])->name('appointments.review');
+        });
     });
 
 // ─── Doctor Routes ────────────────────────────────────────────────────────────
@@ -193,6 +204,10 @@ Route::middleware(['auth', 'verified.email', 'role:admin'])
     ->name('admin.')
     ->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        // ID Verifications
+        Route::get('/id-verifications', [\App\Http\Controllers\Admin\IdVerificationController::class, 'index'])->name('id-verification.index');
+        Route::put('/id-verifications/{user}', [\App\Http\Controllers\Admin\IdVerificationController::class, 'update'])->name('id-verification.update');
 
         // Users
         Route::resource('/users', AdminUserController::class)->only(['index', 'show', 'destroy']);

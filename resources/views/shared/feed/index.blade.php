@@ -113,7 +113,15 @@
                         @if($post->user->role === 'admin')
                             <span class="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full">Announcement</span>
                         @elseif($post->user->role === 'doctor')
-                            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full flex items-center"><svg class="w-3 h-3 text-green-600 inline mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> ✓ Verified Doctor</span>
+                            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">Doctor</span>
+                            @if($post->user->isVerifiedDoctor())
+                            <span class="inline-flex items-center gap-0.5 bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded-full font-semibold">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                Verified
+                            </span>
+                            @endif
                         @else
                             <span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full">Patient</span>
                         @endif

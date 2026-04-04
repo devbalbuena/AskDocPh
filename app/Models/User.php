@@ -37,6 +37,13 @@ class User extends Authenticatable implements MustVerifyEmail
         'online_status',
         'allow_ai_recommendation',
         'email_verified_at',
+        'two_factor_secret',
+        'two_factor_enabled',
+        'two_factor_code',
+        'two_factor_expires_at',
+        'id_document_path',
+        'id_verified_at',
+        'id_verification_status',
     ];
 
     /**
@@ -61,6 +68,9 @@ class User extends Authenticatable implements MustVerifyEmail
             'bday'                    => 'date',
             'allow_ai_recommendation' => 'boolean',
             'password'                => 'hashed',
+            'two_factor_enabled'      => 'boolean',
+            'two_factor_expires_at'   => 'datetime',
+            'id_verified_at'          => 'datetime',
         ];
     }
 
@@ -79,6 +89,13 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->role === 'doctor'
             && $this->doctor_status === 'approved';
+    }
+
+    public function isVerifiedPatient(): bool
+    {
+        return $this->role === 'patient'
+            && $this->id_verification_status === 'approved'
+            && $this->id_verified_at !== null;
     }
 
     public function getFullNameAttribute(): string

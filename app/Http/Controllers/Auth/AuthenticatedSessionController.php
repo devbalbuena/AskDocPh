@@ -26,9 +26,24 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
-        $request->session()->regenerate();
-
         $user = Auth::user();
+
+        if ($user->two_factor_enabled && !$user->isDemo()) {
+            $code = (string) random_int(100000, 999999);
+            $user->forceFill([
+                'two_factor_code' => $code,
+                'two_factor_expires_at' => now()->addMinutes(15),
+            ])->save();
+
+            // Send standard email notification for 2FA
+            $user->notify(new \App\Notifications\TwoFactorCodeNotification($code));
+
+            $request->session()->put('2fa_user_id', $user->id);
+            Auth::guard('web')->logout();
+            return redirect()->route('two-factor.challenge');
+        }
+
+        $request->session()->regenerate();
 
         return match($user->role) {
             'admin'  => redirect('/admin/dashboard'),

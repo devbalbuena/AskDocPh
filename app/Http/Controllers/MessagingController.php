@@ -102,6 +102,7 @@ class MessagingController extends Controller
                     'id'           => $other->id,
                     'name'         => $other->display_name,
                     'role'         => $other->role,
+                    'is_verified_doctor' => $other->isVerifiedDoctor(),
                     'avatar'       => $other->profile_photo ? Storage::url($other->profile_photo) : null,
                     'username'     => $other->username,
                 ] : null,

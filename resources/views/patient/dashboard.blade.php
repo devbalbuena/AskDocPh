@@ -5,6 +5,44 @@
 @section('content')
 <div class="space-y-6">
 
+    {{-- ID Verification Banner --}}
+    @if(!auth()->user()->isDemo() && auth()->user()->id_verification_status !== 'approved')
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-xl shadow-sm mb-6 flex items-start sm:items-center justify-between flex-col sm:flex-row gap-4">
+        <div class="flex items-center gap-3">
+            <div class="bg-yellow-100 rounded-full p-2 text-yellow-600 flex-shrink-0">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-bold text-yellow-800">
+                    @if(auth()->user()->id_verification_status === 'pending')
+                    Identity Verification Pending
+                    @elseif(auth()->user()->id_verification_status === 'rejected')
+                    Identity Verification Rejected
+                    @else
+                    Identity Verification Required
+                    @endif
+                </h3>
+                <p class="text-sm text-yellow-700 mt-0.5">
+                    @if(auth()->user()->id_verification_status === 'pending')
+                    Your ID document is currently under review by our team.
+                    @elseif(auth()->user()->id_verification_status === 'rejected')
+                    Your previous ID submission was rejected. Please upload a clear, valid government ID.
+                    @else
+                    You need to verify your identity to book appointments, join communities, and send messages.
+                    @endif
+                </p>
+            </div>
+        </div>
+        <a href="{{ route('patient.id-verification.notice') }}" class="flex-shrink-0 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 text-sm font-semibold px-4 py-2 rounded-lg transition-colors border border-yellow-300">
+            @if(auth()->user()->id_verification_status === 'pending')
+            View Status
+            @else
+            Verify Now
+            @endif
+        </a>
+    </div>
+    @endif
+
     {{-- Welcome Card --}}
     <div class="bg-gradient-to-br from-green-600 to-green-800 rounded-3xl shadow-sm p-8 mb-6 relative overflow-hidden">
         {{-- Decorative circles --}}

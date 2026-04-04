@@ -296,5 +296,77 @@
             </div>
         </form>
     </div>
+
+    {{-- Two-Factor Authentication --}}
+    @unless(auth()->user()->isDemo())
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8">
+        <div class="flex items-start justify-between">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900 mb-1">Two-Factor Authentication</h2>
+                <p class="text-sm text-gray-500 max-w-xl">Add an extra layer of security to your account. When enabled, you'll be required to enter a 6-digit code during login.</p>
+            </div>
+            <div>
+                <span id="tfa-status-badge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ auth()->user()->two_factor_enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                    {{ auth()->user()->two_factor_enabled ? 'Enabled' : 'Disabled' }}
+                </span>
+            </div>
+        </div>
+        
+        <div class="mt-6 flex items-center justify-between py-4 border-t border-gray-100">
+            <div>
+                <p class="text-sm font-medium text-gray-700">Code Verification</p>
+                <p class="text-xs text-gray-500 mt-0.5">Use email/SMS to receive your authentication codes.</p>
+            </div>
+            <button onclick="toggle2FA(this)" type="button" 
+                    class="relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 {{ auth()->user()->two_factor_enabled ? 'bg-green-600' : 'bg-gray-200' }}" role="switch" aria-checked="{{ auth()->user()->two_factor_enabled ? 'true' : 'false' }}">
+                <span class="sr-only">Toggle 2FA</span>
+                <span class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200 {{ auth()->user()->two_factor_enabled ? 'translate-x-5' : 'translate-x-0' }}" id="tfa-toggle-dot"></span>
+            </button>
+        </div>
+    </div>
+
+    @push('scripts')
+    <script>
+    function toggle2FA(btn) {
+        btn.disabled = true;
+        axios.post('{{ route("profile.toggle-2fa") }}')
+            .then(res => {
+                const enabled = res.data.enabled;
+                btn.setAttribute('aria-checked', enabled.toString());
+                
+                // Update button color
+                if (enabled) {
+                    btn.classList.remove('bg-gray-200');
+                    btn.classList.add('bg-green-600');
+                    document.getElementById('tfa-toggle-dot').classList.remove('translate-x-0');
+                    document.getElementById('tfa-toggle-dot').classList.add('translate-x-5');
+                } else {
+                    btn.classList.remove('bg-green-600');
+                    btn.classList.add('bg-gray-200');
+                    document.getElementById('tfa-toggle-dot').classList.remove('translate-x-5');
+                    document.getElementById('tfa-toggle-dot').classList.add('translate-x-0');
+                }
+
+                // Update badge
+                const badge = document.getElementById('tfa-status-badge');
+                badge.textContent = enabled ? 'Enabled' : 'Disabled';
+                if (enabled) {
+                    badge.classList.remove('bg-gray-100', 'text-gray-800');
+                    badge.classList.add('bg-green-100', 'text-green-800');
+                } else {
+                    badge.classList.remove('bg-green-100', 'text-green-800');
+                    badge.classList.add('bg-gray-100', 'text-gray-800');
+                }
+            })
+            .catch(err => {
+                alert(err.response?.data?.error || 'Failed to toggle 2FA.');
+            })
+            .finally(() => {
+                btn.disabled = false;
+            });
+    }
+    </script>
+    @endpush
+    @endunless
 </div>
 @endsection
