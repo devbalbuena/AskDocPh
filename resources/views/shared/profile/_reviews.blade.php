@@ -20,7 +20,7 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
-                            <h4 class="font-semibold text-gray-900 text-sm">{{ $review->is_anonymous ? 'Anonymous Patient' : $review->patient->display_name }}</h4>
+                            <h4 class="font-semibold text-gray-900 text-sm">{{ $review->patient->display_name }}</h4>
                             <span class="text-[10px] text-gray-400">&bull; {{ $review->created_at->diffForHumans() }}</span>
                         </div>
                         <div class="flex items-center text-yellow-400 mt-0.5">
@@ -33,8 +33,8 @@
                     </div>
                 </div>
             </div>
-            @if($review->review_content)
-            <p class="text-sm text-gray-700 mt-3 leading-relaxed bg-gray-50/50 p-4 rounded-xl border border-gray-100">{{ $review->review_content }}</p>
+            @if($review->review_text)
+            <p class="text-sm text-gray-700 mt-3 leading-relaxed bg-gray-50/50 p-4 rounded-xl border border-gray-100">{{ $review->review_text }}</p>
             @endif
         </div>
         @empty

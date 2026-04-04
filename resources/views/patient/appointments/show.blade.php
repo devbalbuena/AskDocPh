@@ -74,6 +74,72 @@
                 @endforeach
             </div>
             @endif
+
+            {{-- Review section — only for completed appointments --}}
+            @if($appointment->status === 'completed')
+            <div class="border-t border-gray-100 pt-6 mt-2">
+                <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    Rate Your Doctor
+                </h3>
+
+                @if($existingReview)
+                {{-- Already reviewed --}}
+                <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+                    <div class="flex items-center gap-1.5 mb-2">
+                        @for($i = 1; $i <= 5; $i++)
+                            <svg class="w-5 h-5 {{ $i <= $existingReview->rating ? 'text-yellow-400' : 'text-gray-200' }}" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        @endfor
+                        <span class="text-sm text-green-700 font-semibold ml-1">Review submitted — thank you!</span>
+                    </div>
+                    @if($existingReview->review_text)
+                        <p class="text-sm text-gray-700 italic">"{{ $existingReview->review_text }}"</p>
+                    @endif
+                </div>
+                @else
+                {{-- Review form --}}
+                <div id="review-form-wrap" class="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-4">
+                    <div>
+                        <p class="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wider">Your Rating</p>
+                        <div class="flex items-center gap-2" id="star-picker">
+                            @for($i = 1; $i <= 5; $i++)
+                            <button type="button" onclick="selectStar({{ $i }})"
+                                    data-star="{{ $i }}"
+                                    class="star-btn text-gray-300 hover:text-yellow-400 transition-colors focus:outline-none">
+                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            </button>
+                            @endfor
+                        </div>
+                        <p id="rating-label" class="text-xs text-gray-400 mt-1.5">Click a star to rate</p>
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-500 mb-1 font-medium uppercase tracking-wider block">Written Review (optional)</label>
+                        <textarea id="review-text" rows="3" maxlength="2000" placeholder="Share your experience with this doctor..."
+                                  class="w-full border border-gray-200 bg-white rounded-xl px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 resize-none transition"></textarea>
+                    </div>
+
+                    <p id="review-error" class="text-sm text-red-600 hidden"></p>
+
+                    <div class="flex justify-end">
+                        <button id="review-submit-btn" onclick="submitReview({{ $appointment->id }})"
+                                class="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            Submit Review
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Post-submit thank you state (shown via JS) --}}
+                <div id="review-thankyou" class="hidden bg-green-50 border border-green-200 rounded-xl p-4">
+                    <div class="flex items-center gap-2 text-green-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span class="text-sm font-semibold">Review submitted — thank you for your feedback!</span>
+                    </div>
+                </div>
+                @endif
+            </div>
+            @endif
         </div>
 
         {{-- Cancel button --}}
@@ -91,3 +157,58 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+// ── Star Rating Picker ────────────────────────────────────────────
+let selectedRating = 0;
+const ratingLabels = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+
+function selectStar(rating) {
+    selectedRating = rating;
+    document.querySelectorAll('.star-btn').forEach((btn) => {
+        const star = parseInt(btn.dataset.star);
+        btn.classList.toggle('text-yellow-400', star <= rating);
+        btn.classList.toggle('text-gray-300', star > rating);
+    });
+    const label = document.getElementById('rating-label');
+    if (label) label.textContent = `${rating} / 5 — ${ratingLabels[rating]}`;
+}
+
+// ── Submit Review ─────────────────────────────────────────────────
+function submitReview(appointmentId) {
+    const errorEl   = document.getElementById('review-error');
+    const submitBtn = document.getElementById('review-submit-btn');
+
+    errorEl.classList.add('hidden');
+
+    if (selectedRating === 0) {
+        errorEl.textContent = 'Please select a star rating before submitting.';
+        errorEl.classList.remove('hidden');
+        return;
+    }
+
+    const reviewText = document.getElementById('review-text')?.value ?? '';
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    axios.post('/doctor-reviews', {
+        appointment_id : appointmentId,
+        rating         : selectedRating,
+        review_text    : reviewText,
+    })
+    .then(() => {
+        document.getElementById('review-form-wrap').classList.add('hidden');
+        document.getElementById('review-thankyou').classList.remove('hidden');
+    })
+    .catch(err => {
+        const msg = err.response?.data?.message ?? 'Failed to submit review. Please try again.';
+        errorEl.textContent = msg;
+        errorEl.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg> Submit Review';
+    });
+}
+</script>
+@endpush

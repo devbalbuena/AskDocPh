@@ -63,6 +63,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/resources', [ResourceController::class, 'index'])->name('resources.index');
     Route::get('/resources/{resource}', [ResourceController::class, 'show'])->name('resources.show');
 
+    // User search (literal route MUST be before /users/{username} wildcard)
+    Route::get('/users/search', [MessagingController::class, 'searchUsers'])->name('users.search');
+
     // Public user profiles
     Route::get('/users/{username}', [PublicProfileController::class, 'show'])->name('users.profile');
 
@@ -79,8 +82,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/messages/{conversation}/send', [MessagingController::class, 'send'])->name('messages.send');
     Route::get('/messages/{conversation}', [MessagingController::class, 'show'])->name('messages.show');
 
-    // User search (for new message modal)
-    Route::get('/users/search', [MessagingController::class, 'searchUsers'])->name('users.search');
+    // (users/search moved above /users/{username} — see line above)
 
     // Doctor Reviews
     Route::post('/doctor-reviews', [DoctorReviewController::class, 'store'])->name('doctor-reviews.store');

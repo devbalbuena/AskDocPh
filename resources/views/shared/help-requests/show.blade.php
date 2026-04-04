@@ -5,6 +5,20 @@
 @section('content')
 <div class="h-full flex flex-col -m-6" style="height: calc(100vh - 4rem);">
 
+    {{-- Flash Messages --}}
+    @if(session('success'))
+    <div class="flex-shrink-0 mx-6 mt-4 bg-green-50 border border-green-200 text-green-800 text-sm font-medium px-4 py-3 rounded-xl flex items-center gap-2">
+        <svg class="w-4 h-4 flex-shrink-0 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {{ session('success') }}
+    </div>
+    @endif
+    @if(session('info'))
+    <div class="flex-shrink-0 mx-6 mt-4 bg-blue-50 border border-blue-200 text-blue-800 text-sm font-medium px-4 py-3 rounded-xl flex items-center gap-2">
+        <svg class="w-4 h-4 flex-shrink-0 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {{ session('info') }}
+    </div>
+    @endif
+
     {{-- Header --}}
     <div class="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0 flex items-center justify-between z-10 shadow-sm">
         <div class="flex items-center gap-4">
@@ -73,28 +87,32 @@
         {{-- Messages Area (Accepted or Resolved) --}}
         <div id="messages-container" class="flex-1 overflow-y-auto px-6 py-6 space-y-4 bg-gray-50/30">
             @if($messages->isEmpty())
-                <div class="flex-1 flex flex-col items-center justify-center h-full">
-                    <p class="text-sm text-gray-500">The request is open. You can start discussing here.</p>
+                <div class="flex flex-col items-center justify-center h-full py-12">
+                    <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-3">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    </div>
+                    <p class="text-sm text-gray-500 font-medium">The request is open. You can start discussing here.</p>
+                    <p class="text-xs text-gray-400 mt-1">Type a message below to get started.</p>
                 </div>
             @else
                 @foreach($messages as $msg)
-                @php $isOwn = $msg->user_id === auth()->id(); @endphp
+                @php $isOwn = $msg->sender_user_id === auth()->id(); @endphp
                 <div class="flex {{ $isOwn ? 'justify-end' : 'justify-start' }} gap-2.5">
                     
                     @if(!$isOwn)
                     <div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold overflow-hidden
-                        {{ $msg->user->role === 'doctor' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700' }}">
-                        @if($msg->user->profile_photo)
-                            <img src="{{ Storage::url($msg->user->profile_photo) }}" class="w-full h-full object-cover">
+                        {{ $msg->sender->role === 'doctor' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700' }}">
+                        @if($msg->sender->profile_photo)
+                            <img src="{{ Storage::url($msg->sender->profile_photo) }}" class="w-full h-full object-cover">
                         @else
-                            {{ strtoupper(substr($msg->user->fname, 0, 1)) }}
+                            {{ strtoupper(substr($msg->sender->fname, 0, 1)) }}
                         @endif
                     </div>
                     @endif
 
                     <div class="max-w-md sm:max-w-lg lg:max-w-xl flex flex-col {{ $isOwn ? 'items-end' : 'items-start' }}">
                         @if(!$isOwn)
-                            <span class="text-xs text-gray-500 mb-1 ml-1">{{ $msg->user->display_name }}</span>
+                            <span class="text-xs text-gray-500 mb-1 ml-1">{{ $msg->sender->display_name }}</span>
                         @endif
                         <div class="px-4 py-3 text-sm leading-relaxed shadow-sm
                             {{ $isOwn

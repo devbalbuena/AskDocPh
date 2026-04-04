@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Patient;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\DoctorReview;
 use App\Models\DoctorSchedule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -96,7 +97,12 @@ class AppointmentController extends Controller
             $q->where('is_visible_to_patient', true);
         }]);
 
-        return view('patient.appointments.show', compact('appointment'));
+        // Check if the patient has already reviewed this appointment
+        $existingReview = DoctorReview::where('appointment_id', $appointment->id)
+            ->where('patient_id', auth()->id())
+            ->first();
+
+        return view('patient.appointments.show', compact('appointment', 'existingReview'));
     }
 
     /** POST /patient/appointments/{appointment}/cancel */

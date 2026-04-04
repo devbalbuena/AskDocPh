@@ -95,25 +95,50 @@
             @endif
 
         @elseif($resource->type === 'pdf')
-            {{-- PDF: show download link --}}
-            <div class="text-center py-8">
-                <svg class="w-16 h-16 text-red-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                </svg>
-                @if($resource->file_path)
-                <a href="{{ Storage::url($resource->file_path) }}"
-                   download
-                   target="_blank"
-                   class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-6 py-3 rounded-xl transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                    </svg>
-                    Download PDF
-                </a>
-                @else
-                <p class="text-gray-400 text-sm">PDF file not available.</p>
-                @endif
+            {{-- PDF: inline preview + download/open buttons --}}
+            @if($resource->file_path)
+            <div class="space-y-4">
+                {{-- Inline PDF Viewer --}}
+                <div class="rounded-xl overflow-hidden border border-gray-200 bg-gray-100" style="height: 680px;">
+                    <iframe
+                        src="{{ Storage::url($resource->file_path) }}#toolbar=1&navpanes=1&scrollbar=1"
+                        class="w-full h-full"
+                        title="{{ $resource->title }}"
+                        allow="fullscreen">
+                        {{-- Fallback if iframe not supported --}}
+                        <div class="flex flex-col items-center justify-center h-full text-center p-8">
+                            <p class="text-gray-500 text-sm mb-4">Your browser doesn't support inline PDF viewing.</p>
+                            <a href="{{ Storage::url($resource->file_path) }}" target="_blank"
+                               class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-5 py-2.5 rounded-xl transition-colors text-sm">
+                                Open PDF
+                            </a>
+                        </div>
+                    </iframe>
+                </div>
+
+                {{-- Action buttons --}}
+                <div class="flex items-center gap-3 flex-wrap">
+                    <a href="{{ Storage::url($resource->file_path) }}"
+                       download
+                       class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-5 py-2.5 rounded-xl transition-colors text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        Download PDF
+                    </a>
+                    <a href="{{ Storage::url($resource->file_path) }}"
+                       target="_blank"
+                       class="inline-flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium px-5 py-2.5 rounded-xl transition-colors text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                        </svg>
+                        Open in New Tab
+                    </a>
+                </div>
             </div>
+            @else
+            <p class="text-gray-400 text-sm text-center py-8">PDF file not available.</p>
+            @endif
 
         @elseif($resource->type === 'video')
             {{-- Video: detect if file_path is a URL (YouTube/Vimeo) or a stored file --}}

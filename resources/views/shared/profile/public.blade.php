@@ -316,5 +316,28 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('social-modal').addEventListener('click', function (e) {
         if (e.target === this) closeModal();
     });
+
+    // ── Message Button ─────────────────────────────────────────
+    window.startConversation = function(recipientId) {
+        // Find and update the button to show loading state
+        const btn = document.querySelector('button[onclick^="startConversation"]');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Opening...';
+        }
+
+        axios.post('/messages/start', { recipient_id: recipientId })
+            .then(res => {
+                window.location.href = '/messages/' + res.data.conversation_id;
+            })
+            .catch(err => {
+                const msg = err.response?.data?.message ?? 'Could not start conversation.';
+                alert(msg);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg> Message';
+                }
+            });
+    };
 });
 </script>

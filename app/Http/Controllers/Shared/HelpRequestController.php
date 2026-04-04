@@ -116,7 +116,7 @@ class HelpRequestController extends Controller
     }
 
     /** POST /help-requests/{helpRequest}/accept */
-    public function accept(HelpRequest $helpRequest): JsonResponse
+    public function accept(HelpRequest $helpRequest): RedirectResponse
     {
         abort_unless(auth()->user()->role === 'doctor', 403);
         abort_unless($helpRequest->doctor_id === auth()->id(), 403);
@@ -135,11 +135,12 @@ class HelpRequestController extends Controller
             ],
         ]);
 
-        return response()->json(['success' => true, 'status' => 'accepted']);
+        return redirect()->route('help-requests.show', $helpRequest->id)
+            ->with('success', 'Help request accepted. You can now exchange messages.');
     }
 
     /** POST /help-requests/{helpRequest}/decline */
-    public function decline(HelpRequest $helpRequest): JsonResponse
+    public function decline(HelpRequest $helpRequest): RedirectResponse
     {
         abort_unless(auth()->user()->role === 'doctor', 403);
         abort_unless($helpRequest->doctor_id === auth()->id(), 403);
@@ -158,11 +159,12 @@ class HelpRequestController extends Controller
             ],
         ]);
 
-        return response()->json(['success' => true, 'status' => 'declined']);
+        return redirect()->route('help-requests.show', $helpRequest->id)
+            ->with('info', 'Help request declined.');
     }
 
     /** POST /help-requests/{helpRequest}/resolve */
-    public function resolve(HelpRequest $helpRequest): JsonResponse
+    public function resolve(HelpRequest $helpRequest): RedirectResponse
     {
         abort_unless(auth()->user()->role === 'doctor', 403);
         abort_unless($helpRequest->doctor_id === auth()->id(), 403);
@@ -173,11 +175,12 @@ class HelpRequestController extends Controller
             'resolved_at' => now(),
         ]);
 
-        return response()->json(['success' => true, 'status' => 'resolved']);
+        return redirect()->route('help-requests.show', $helpRequest->id)
+            ->with('success', 'Help request marked as resolved.');
     }
 
     /** POST /help-requests/{helpRequest}/message — send a message in the thread */
-    public function sendMessage(Request $request, HelpRequest $helpRequest): JsonResponse
+    public function sendMessage(Request $request, HelpRequest $helpRequest): RedirectResponse
     {
         $user = auth()->user();
 
@@ -185,29 +188,18 @@ class HelpRequestController extends Controller
             $helpRequest->user_id === $user->id || $helpRequest->doctor_id === $user->id,
             403
         );
-        abort_unless(in_array($helpRequest->status, ['pending', 'accepted']), 422);
+        abort_unless($helpRequest->status === 'accepted', 422);
 
         $request->validate([
-            'body' => ['required', 'string', 'max:2000'],
+            'message' => ['required', 'string', 'max:2000'],
         ]);
 
-        $message = HelpRequestMessage::create([
+        HelpRequestMessage::create([
             'help_request_id' => $helpRequest->id,
             'sender_user_id'  => $user->id,
-            'body'            => $request->body,
+            'body'            => $request->message,
         ]);
 
-        $message->load('sender');
-
-        return response()->json([
-            'success' => true,
-            'message' => [
-                'id'          => $message->id,
-                'body'        => $message->body,
-                'sender_name' => $message->sender->display_name,
-                'is_own'      => true,
-                'created_at'  => $message->created_at->format('g:i A'),
-            ],
-        ]);
+        return redirect()->route('help-requests.show', $helpRequest->id);
     }
 }
