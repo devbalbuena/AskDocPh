@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,7 +39,14 @@ class DoctorAppointmentController extends Controller
 
         $appointment->load(['patient', 'notes.doctor']);
 
-        return view('doctor.appointments.show', compact('appointment'));
+        // Pass verified doctors for the referral modal (exclude self)
+        $verifiedDoctors = User::where('role', 'doctor')
+            ->where('id', '!=', auth()->id())
+            ->where('doctor_status', 'approved')
+            ->orderBy('lname')
+            ->get(['id', 'fname', 'lname', 'bio']);
+
+        return view('doctor.appointments.show', compact('appointment', 'verifiedDoctors'));
     }
 
     /** POST /doctor/appointments/{appointment}/confirm */

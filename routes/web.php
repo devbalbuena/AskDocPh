@@ -22,6 +22,7 @@ use App\Http\Controllers\Doctor\DoctorDashboardController;
 use App\Http\Controllers\Doctor\DoctorScheduleController;
 use App\Http\Controllers\Doctor\DoctorAppointmentController;
 use App\Http\Controllers\Doctor\AppointmentNoteController;
+use App\Http\Controllers\Doctor\ReferralController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminDoctorApplicationController;
@@ -204,6 +205,12 @@ Route::middleware(['auth', 'verified.email', 'role:doctor'])
         Route::post('/appointments/{appointment}/notes', [AppointmentNoteController::class, 'store'])->name('appointments.notes.store');
         Route::put('/appointments/{appointment}/notes/{note}', [AppointmentNoteController::class, 'update'])->name('appointments.notes.update');
         Route::get('/appointments/{appointment}/notes/{note}', [AppointmentNoteController::class, 'show'])->name('appointments.notes.show');
+
+        // Referrals
+        Route::get('/referrals', [ReferralController::class, 'index'])->name('referrals.index');
+        Route::post('/referrals', [ReferralController::class, 'store'])->name('referrals.store');
+        Route::post('/referrals/{referral}/accept', [ReferralController::class, 'accept'])->name('referrals.accept');
+        Route::post('/referrals/{referral}/decline', [ReferralController::class, 'decline'])->name('referrals.decline');
 
         // Resources (doctor can create and delete their own)
         Route::get('/resources/create', [ResourceController::class, 'create'])->name('resources.create');

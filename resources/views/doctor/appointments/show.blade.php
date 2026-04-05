@@ -93,6 +93,15 @@
                     <button type="submit" class="bg-red-50 border border-red-200 text-red-500 hover:bg-red-100 text-sm px-5 py-2.5 rounded-lg transition-colors">Cancel Appointment</button>
                 </form>
                 @endif
+                @if($appointment->status === 'completed')
+                <button onclick="document.getElementById('refer-modal').style.display='flex'"
+                        class="inline-flex items-center gap-2 bg-indigo-50 border border-indigo-300 text-indigo-600 hover:bg-indigo-100 text-sm px-5 py-2.5 rounded-lg transition-colors font-medium">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    Refer Patient
+                </button>
+                @endif
             </div>
         </div>
     </div>
@@ -139,4 +148,98 @@
         </form>
     </div>
 </div>
+
+{{-- Refer Patient Modal --}}
+<div id="refer-modal" style="display:none"
+     class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <h3 class="text-base font-semibold text-gray-900">Refer Patient to Another Doctor</h3>
+            <button onclick="document.getElementById('refer-modal').style.display='none'"
+                    class="text-gray-400 hover:text-gray-600 text-xl leading-none font-bold">&times;</button>
+        </div>
+
+        <div class="px-6 py-5 space-y-4">
+            {{-- Patient info --}}
+            <div class="bg-gray-50 rounded-xl px-4 py-3 text-sm">
+                <span class="text-gray-500">Referring patient:</span>
+                <span class="font-semibold text-gray-900 ml-1">{{ $appointment->patient->display_name ?? 'Unknown' }}</span>
+            </div>
+
+            {{-- Target doctor --}}
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Refer to Doctor <span class="text-red-500">*</span></label>
+                <select id="refer-doctor"
+                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-indigo-500">
+                    <option value="">Select a doctor...</option>
+                    @foreach($verifiedDoctors as $doc)
+                        @php
+                            $spec = json_decode($doc->bio ?? '{}', true)['specialization'] ?? null;
+                        @endphp
+                        <option value="{{ $doc->id }}">
+                            Dr. {{ $doc->lname }}, {{ $doc->fname }}{{ $spec ? ' — ' . $spec : '' }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- Reason --}}
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Reason <span class="text-red-500">*</span></label>
+                <input type="text" id="refer-reason" maxlength="255"
+                       placeholder="e.g. Needs specialist evaluation for anxiety..."
+                       class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-indigo-500">
+            </div>
+
+            {{-- Notes --}}
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Additional Notes <span class="text-gray-400">(optional)</span></label>
+                <textarea id="refer-message" rows="3" maxlength="1000"
+                          placeholder="Background context, clinical notes..."
+                          class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+            </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
+            <button onclick="document.getElementById('refer-modal').style.display='none'"
+                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm px-4 py-2 rounded-lg transition-colors">Cancel</button>
+            <button id="refer-submit-btn" onclick="submitReferral({{ $appointment->id }})"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors">Send Referral</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function submitReferral(appointmentId) {
+    const doctorId = document.getElementById('refer-doctor').value;
+    const reason   = document.getElementById('refer-reason').value.trim();
+    const message  = document.getElementById('refer-message').value.trim();
+    const btn      = document.getElementById('refer-submit-btn');
+
+    if (!doctorId) { alert('Please select a doctor.'); return; }
+    if (!reason)   { alert('Please enter a reason.'); return; }
+
+    btn.disabled    = true;
+    btn.textContent = 'Sending...';
+
+    axios.post('{{ route("doctor.referrals.store") }}', {
+        appointment_id:        appointmentId,
+        referred_to_doctor_id: doctorId,
+        reason:                reason,
+        message:               message || null,
+    }).then(res => {
+        document.getElementById('refer-modal').style.display = 'none';
+        // Show confirmation inline
+        const flash = document.createElement('div');
+        flash.className = 'bg-indigo-50 border border-indigo-200 text-indigo-700 text-sm px-4 py-3 rounded-lg mt-4';
+        flash.textContent = '✓ ' + res.data.message;
+        document.querySelector('.max-w-2xl').prepend(flash);
+        setTimeout(() => flash.remove(), 5000);
+    }).catch(err => {
+        alert(err.response?.data?.message ?? 'Failed to send referral.');
+        btn.disabled    = false;
+        btn.textContent = 'Send Referral';
+    });
+}
+</script>
 @endsection
