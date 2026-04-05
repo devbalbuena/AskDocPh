@@ -72,7 +72,8 @@
 
     {{-- Posts Feed --}}
     <div id="posts-container" class="space-y-4">
-        @foreach($posts as $post)
+        @php $pollIndex = 0; @endphp
+        @foreach($posts as $index => $post)
         @php
             $userReaction = $post->likes->firstWhere('user_id', auth()->id());
             $emojiMap     = ['heart' => '❤️', 'sad' => '😢', 'wow' => '😮', 'haha' => '😂', 'like' => '👍'];
@@ -251,6 +252,64 @@
                 </form>
             </div>
         </div>
+
+        {{-- Interleave Polls (1 poll for every 2 posts) --}}
+        @if($index % 2 === 1 && $pollIndex < $polls->count())
+            @php 
+                $poll = $polls[$pollIndex++];
+                $hasVoted = count($poll->votes->where('user_id', auth()->id())) > 0;
+                $isExpired = $poll->expires_at && $poll->expires_at->isPast();
+                $showResults = $hasVoted || $isExpired;
+                $totalVotes = $poll->votes_count;
+            @endphp
+            <div class="bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-2xl shadow-sm p-5" id="poll-{{ $poll->id }}">
+                <div class="mb-3">
+                    <div class="flex items-center gap-2 mb-2 text-emerald-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                        <h3 class="font-bold text-sm">Community Poll by {{ $poll->user->display_name ?? 'Unknown' }}</h3>
+                    </div>
+                    <p class="text-base font-semibold text-gray-900 mb-4">{{ $poll->question }}</p>
+                </div>
+
+                <div class="space-y-2 mb-4" id="poll-options-{{ $poll->id }}">
+                    @if($showResults)
+                        @foreach($poll->options as $option)
+                            @php 
+                                $optionVotes = $option->votes()->count(); 
+                                $percentage = $totalVotes > 0 ? round(($optionVotes / $totalVotes) * 100) : 0;
+                                $userVotedThis = $hasVoted && $option->votes()->where('user_id', auth()->id())->exists();
+                            @endphp
+                            <div class="relative w-full bg-gray-100 rounded-xl overflow-hidden h-10 flex items-center">
+                                <div class="absolute top-0 left-0 h-full bg-emerald-200 transition-all duration-500" style="width: {{ $percentage }}%"></div>
+                                <div class="relative z-10 px-4 w-full flex justify-between items-center text-sm">
+                                    <span class="font-medium text-gray-800 {{ $userVotedThis ? 'font-bold' : '' }}">
+                                        {{ $option->text }} {!! $userVotedThis ? '<span class="text-emerald-700 ml-1 font-bold">✓</span>' : '' !!}
+                                    </span>
+                                    <span class="text-gray-700 font-semibold">{{ $percentage }}%</span>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        @foreach($poll->options as $option)
+                            <button onclick="votePoll({{ $poll->id }}, {{ $option->id }}, this)"
+                                    class="w-full text-left bg-white border border-gray-200 hover:border-emerald-400 hover:bg-emerald-50 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors shadow-sm">
+                                {{ $option->text }}
+                            </button>
+                        @endforeach
+                    @endif
+                </div>
+
+                <div class="flex justify-between items-center text-xs text-gray-500 font-medium">
+                    <span>{{ $totalVotes }} vote{{ $totalVotes !== 1 ? 's' : '' }}</span>
+                    @if($isExpired)
+                        <span class="text-red-500">Poll Ended</span>
+                    @elseif($poll->expires_at)
+                        <span>Ends {{ $poll->expires_at->diffForHumans() }}</span>
+                    @endif
+                </div>
+            </div>
+        @endif
+
         @endforeach
     </div>
 
@@ -504,6 +563,26 @@ function showToast(message) {
     msg.textContent = message;
     toast.classList.remove('hidden');
     setTimeout(() => toast.classList.add('hidden'), 4500);
+}
+
+// ── Polls ───────────────────────────────────────────────────────
+function votePoll(pollId, optionId, btn) {
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Voting...';
+
+    axios.post(`/polls/${pollId}/vote`, { option_id: optionId })
+        .then(res => {
+            if(res.data.success) {
+                showToast('Vote cast successfully!');
+                setTimeout(() => window.location.reload(), 800);
+            }
+        })
+        .catch(err => {
+            alert(err.response?.data?.message || 'Could not cast vote.');
+            btn.disabled = false;
+            btn.textContent = originalText;
+        });
 }
 
 // ── Global click: close menus & pickers when clicking outside ───

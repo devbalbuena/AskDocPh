@@ -29,7 +29,9 @@ class FeedController extends Controller
 
         $userBookmarks = auth()->user()->bookmarks()->pluck('post_id')->toArray();
 
-        return view('shared.feed.index', compact('posts', 'layout', 'userBookmarks'));
+        $polls = \App\Models\CommunityPoll::with(['user', 'options'])->withCount('votes')->latest()->get();
+
+        return view('shared.feed.index', compact('posts', 'layout', 'userBookmarks', 'polls'));
     }
 
     /** POST /posts — create a new post (returns JSON for Axios) */

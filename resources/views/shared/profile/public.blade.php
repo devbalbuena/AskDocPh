@@ -87,6 +87,11 @@
             <div class="mb-3">
                 <div class="flex items-center gap-2 flex-wrap">
                     <h1 class="text-xl font-bold text-gray-900">{{ $profileUser->display_name }}</h1>
+                    @if($profileUser->role === 'doctor')
+                    <span class="text-xs px-2 py-0.5 rounded-full font-medium {{ $profileUser->online_status === 'online' ? 'bg-green-100 text-green-700' : ($profileUser->online_status === 'away' ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700') }}">
+                        {{ $profileUser->online_status === 'online' ? '● Available Now' : ($profileUser->online_status === 'away' ? '● Busy' : '● On Leave') }}
+                    </span>
+                    @endif
                     {{-- Role badge --}}
                     <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize
                         {{ $profileUser->role === 'doctor' ? 'bg-blue-100 text-blue-700'
@@ -110,7 +115,7 @@
                     @endif
                 </div>
                 @if($profileUser->username)
-                <p class="text-gray-400 text-sm mt-0.5">@{{ $profileUser->username }}</p>
+                <p class="text-gray-400 text-sm mt-0.5">&commat;{{ $profileUser->username }}</p>
                 @endif
 
                 {{-- Doctor professional titles --}}
@@ -126,8 +131,13 @@
             </div>
 
             {{-- Bio --}}
-            @if($profileUser->bio)
-            <p class="text-gray-600 text-sm leading-relaxed mb-4">{{ $profileUser->bio }}</p>
+            @php
+            $professional = json_decode($profileUser->bio ?? '{}', true) ?? [];
+            @endphp
+            @if(!empty($professional['specialization']))
+            <p class="text-gray-500 text-sm mb-4">
+                {{ $professional['specialization'] }}
+            </p>
             @endif
 
             {{-- Followers / Following counts --}}

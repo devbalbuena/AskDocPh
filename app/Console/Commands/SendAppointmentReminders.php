@@ -2,97 +2,117 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Command;
 use App\Models\Appointment;
 use App\Models\Notification;
 use Carbon\Carbon;
-use Illuminate\Console\Command;
 
 class SendAppointmentReminders extends Command
 {
-    protected $signature   = 'appointments:send-reminders';
-    protected $description = 'Send 24-hour and 1-hour appointment reminders to patients and doctors';
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'reminders:appointments';
 
-    public function handle(): int
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Send 1-hour and 24-hour appointment reminders to doctors and patients';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle()
     {
-        $now       = Carbon::now();
-        $in24h     = $now->copy()->addHours(24);
-        $in1h      = $now->copy()->addHour();
-        $windows   = [
-            ['label' => '24h', 'start' => $in24h->copy()->subMinutes(10), 'end' => $in24h->copy()->addMinutes(10)],
-            ['label' => '1h',  'start' => $in1h->copy()->subMinutes(10),  'end' => $in1h->copy()->addMinutes(10)],
-        ];
+        $now = Carbon::now();
 
-        $sent = 0;
+        // 1-hour reminders: appointment_date = today AND start_time is between now+55m and now+65m
+        $oneHourStart = $now->copy()->addMinutes(55)->format('H:i:s');
+        $oneHourEnd = $now->copy()->addMinutes(65)->format('H:i:s');
 
-        foreach ($windows as $window) {
-            $appointments = Appointment::with(['patient', 'doctor'])
-                ->whereIn('status', ['pending', 'confirmed'])
-                ->whereDate('appointment_date', $window['start']->toDateString())
-                ->get()
-                ->filter(function (Appointment $appt) use ($window) {
-                    // Combine appointment_date + start_time into a Carbon datetime
-                    $apptDatetime = Carbon::parse(
-                        $appt->appointment_date->toDateString() . ' ' . $appt->start_time
-                    );
-                    return $apptDatetime->between($window['start'], $window['end']);
-                });
+        $oneHourAppointments = Appointment::where('status', 'confirmed')
+            ->where('appointment_date', $now->toDateString())
+            ->whereBetween('start_time', [$oneHourStart, $oneHourEnd])
+            ->get();
 
-            foreach ($appointments as $appt) {
-                $label = $window['label'];
+        foreach ($oneHourAppointments as $appt) {
+            $patient = $appt->patient;
+            $doctor = $appt->doctor;
 
-                // Deduplication: check if reminder already sent
-                $patientDupe = Notification::where('user_id', $appt->patient_id)
-                    ->where('type', 'appointment_reminder')
-                    ->whereJsonContains('data->appointment_id', $appt->id)
-                    ->whereJsonContains('data->window', $label)
-                    ->exists();
+            // Notify patient
+            Notification::create([
+                'user_id' => $patient->id,
+                'actor_id' => $doctor->id,
+                'type' => 'appointment_reminder_1hour',
+                'data' => [
+                    'appointment_id' => $appt->id,
+                    'doctor_name' => $doctor->display_name,
+                    'patient_name' => $patient->display_name,
+                    'time' => $appt->start_time,
+                    'type' => 'appointment_reminder_1hour'
+                ]
+            ]);
 
-                $doctorDupe = Notification::where('user_id', $appt->doctor_id)
-                    ->where('type', 'appointment_reminder')
-                    ->whereJsonContains('data->appointment_id', $appt->id)
-                    ->whereJsonContains('data->window', $label)
-                    ->exists();
-
-                $apptDatetime = Carbon::parse(
-                    $appt->appointment_date->toDateString() . ' ' . $appt->start_time
-                );
-
-                $data = [
-                    'appointment_id'   => $appt->id,
-                    'window'           => $label,
-                    'appointment_date' => $appt->appointment_date->format('M d, Y'),
-                    'start_time'       => Carbon::parse($appt->start_time)->format('g:i A'),
-                    'countdown'        => $label === '24h' ? 'in 24 hours' : 'in 1 hour',
-                    'url'              => '#',
-                ];
-
-                if (!$patientDupe && $appt->patient) {
-                    Notification::create([
-                        'user_id'  => $appt->patient_id,
-                        'actor_id' => null,
-                        'type'     => 'appointment_reminder',
-                        'data'     => array_merge($data, [
-                            'message' => "Your appointment with Dr. {$appt->doctor?->display_name} is {$data['countdown']} ({$data['appointment_date']} at {$data['start_time']}).",
-                        ]),
-                    ]);
-                    $sent++;
-                }
-
-                if (!$doctorDupe && $appt->doctor) {
-                    Notification::create([
-                        'user_id'  => $appt->doctor_id,
-                        'actor_id' => null,
-                        'type'     => 'appointment_reminder',
-                        'data'     => array_merge($data, [
-                            'message' => "Appointment with {$appt->patient?->display_name} is {$data['countdown']} ({$data['appointment_date']} at {$data['start_time']}).",
-                        ]),
-                    ]);
-                    $sent++;
-                }
-            }
+            // Notify doctor
+            Notification::create([
+                'user_id' => $doctor->id,
+                'actor_id' => $patient->id,
+                'type' => 'appointment_reminder_1hour',
+                'data' => [
+                    'appointment_id' => $appt->id,
+                    'doctor_name' => $doctor->display_name,
+                    'patient_name' => $patient->display_name,
+                    'time' => $appt->start_time,
+                    'type' => 'appointment_reminder_1hour'
+                ]
+            ]);
         }
 
-        $this->info("Sent {$sent} appointment reminder notifications.");
-        return self::SUCCESS;
+        // 24-hour reminders: appointment_date = tomorrow
+        $tomorrow = $now->copy()->addDay()->toDateString();
+        
+        $twentyFourHourAppointments = Appointment::where('status', 'confirmed')
+            ->where('appointment_date', $tomorrow)
+            ->get();
+
+        foreach ($twentyFourHourAppointments as $appt) {
+            $patient = $appt->patient;
+            $doctor = $appt->doctor;
+
+            // Notify patient
+            Notification::create([
+                'user_id' => $patient->id,
+                'actor_id' => $doctor->id,
+                'type' => 'appointment_reminder_24hours',
+                'data' => [
+                    'appointment_id' => $appt->id,
+                    'doctor_name' => $doctor->display_name,
+                    'patient_name' => $patient->display_name,
+                    'time' => $appt->start_time,
+                    'type' => 'appointment_reminder_24hours'
+                ]
+            ]);
+
+            // Notify doctor
+            Notification::create([
+                'user_id' => $doctor->id,
+                'actor_id' => $patient->id,
+                'type' => 'appointment_reminder_24hours',
+                'data' => [
+                    'appointment_id' => $appt->id,
+                    'doctor_name' => $doctor->display_name,
+                    'patient_name' => $patient->display_name,
+                    'time' => $appt->start_time,
+                    'type' => 'appointment_reminder_24hours'
+                ]
+            ]);
+        }
+
+        $total = $oneHourAppointments->count() + $twentyFourHourAppointments->count();
+        $this->info("Sent {$total} appointment reminders.");
     }
 }

@@ -4,6 +4,85 @@
 
 @section('content')
 <div class="space-y-6">
+    @if(isset($recommendedDoctors) && $recommendedDoctors->isNotEmpty())
+    <div class="mb-6">
+        <h2 class="text-gray-900 font-semibold text-lg mb-3 flex items-center gap-2">
+            <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+            </svg>
+            Recommended for You
+        </h2>
+        <p class="text-gray-400 text-sm mb-4">
+            Based on your recent mood entries
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            @foreach($recommendedDoctors as $doctor)
+            @php
+                $titles = $doctor->doctorApplications->flatMap(fn($a) => $a->professionalTitles)->pluck('professionalTitle.name')->filter()->implode(', ');
+            @endphp
+            <div class="relative bg-white rounded-2xl shadow-sm border border-green-200 p-6 flex flex-col items-center text-center hover:border-green-400 transition-all group overflow-hidden">
+                <span class="absolute top-3 right-3 bg-green-100 text-green-700 text-[10px] uppercase font-bold px-2 py-1 rounded-full">Recommended</span>
+                <div class="w-20 h-20 rounded-2xl bg-green-100 flex items-center justify-center text-2xl font-bold text-green-700 mb-4 group-hover:bg-green-600/50 transition-colors overflow-hidden mt-2">
+                    @if($doctor->profile_photo)
+                    <img src="{{ asset('storage/'.$doctor->profile_photo) }}" alt="{{ $doctor->display_name }}" class="w-full h-full object-cover">
+                    @else
+                    {{ strtoupper(substr($doctor->fname, 0, 1)) }}{{ strtoupper(substr($doctor->lname, 0, 1)) }}
+                    @endif
+                </div>
+            <div class="flex flex-col items-center">
+                <p class="text-gray-900 font-semibold flex items-center justify-center gap-1">
+                    Dr. {{ $doctor->display_name }}
+                    @if($doctor->isVerifiedDoctor())
+                    <span class="text-blue-500" title="Verified Doctor">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                    </span>
+                    @endif
+                    <span class="inline-block w-2 h-2 rounded-full ml-1 {{ $doctor->online_status === 'online' ? 'bg-green-500' : ($doctor->online_status === 'away' ? 'bg-orange-500' : 'bg-red-500') }}"></span>
+                </p>
+                <div class="mt-0.5">
+                    <span class="text-xs font-medium {{ $doctor->online_status === 'online' ? 'text-green-600' : ($doctor->online_status === 'away' ? 'text-orange-500' : 'text-red-500') }}">
+                        {{ $doctor->online_status === 'online' ? 'Available Now' : ($doctor->online_status === 'away' ? 'Busy' : 'On Leave') }}
+                    </span>
+                </div>
+            </div>
+                @php $avgRating = $doctor->doctorReviews->avg('rating'); @endphp
+                @if($avgRating > 0)
+                <div class="flex items-center gap-1 mt-1 text-xs">
+                    <svg class="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <span class="font-bold text-gray-700">{{ number_format($avgRating, 1) }}</span>
+                    <span class="text-gray-400">({{ $doctor->doctorReviews->count() }})</span>
+                </div>
+                @else
+                <div class="text-xs text-gray-400 mt-1">No reviews yet</div>
+                @endif
+                @if($doctor->next_available)
+                    <p class="text-green-600 text-sm mt-1.5">Next available: {{ $doctor->next_available }}</p>
+                @else
+                    <p class="text-gray-400 text-sm mt-1.5">No availability set yet</p>
+                @endif
+                @if($titles)
+                <p class="text-green-600 text-xs mt-1">{{ $titles }}</p>
+                @endif
+                @php
+                $professional = json_decode($doctor->bio ?? '{}', true) ?? [];
+                @endphp
+                @if(!empty($professional['specialization']))
+                <p class="text-gray-500 text-sm mt-1">
+                    {{ $professional['specialization'] }}
+                </p>
+                @endif
+                <a href="{{ route('patient.doctors.schedule', $doctor) }}" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-3 rounded-xl transition-colors shadow-sm block text-center">
+                    Book Appointment
+                </a>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    <hr class="border-gray-100 mb-6">
+    @endif
+    
     <form method="GET" class="flex flex-wrap items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
         <div>
             <select name="specialization" onchange="this.form.submit()" class="bg-gray-50 border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 min-w-[200px]">
@@ -37,16 +116,24 @@
                 {{ strtoupper(substr($doctor->fname, 0, 1)) }}{{ strtoupper(substr($doctor->lname, 0, 1)) }}
                 @endif
             </div>
-            <p class="text-gray-900 font-semibold flex items-center justify-center gap-1">
-                Dr. {{ $doctor->display_name }}
-                @if($doctor->isVerifiedDoctor())
-                <span class="text-blue-500" title="Verified Doctor">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                    </svg>
-                </span>
-                @endif
-            </p>
+            <div class="flex flex-col items-center">
+                <p class="text-gray-900 font-semibold flex items-center justify-center gap-1">
+                    Dr. {{ $doctor->display_name }}
+                    @if($doctor->isVerifiedDoctor())
+                    <span class="text-blue-500" title="Verified Doctor">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                    </span>
+                    @endif
+                    <span class="inline-block w-2 h-2 rounded-full ml-1 {{ $doctor->online_status === 'online' ? 'bg-green-500' : ($doctor->online_status === 'away' ? 'bg-orange-500' : 'bg-red-500') }}"></span>
+                </p>
+                <div class="mt-0.5">
+                    <span class="text-xs font-medium {{ $doctor->online_status === 'online' ? 'text-green-600' : ($doctor->online_status === 'away' ? 'text-orange-500' : 'text-red-500') }}">
+                        {{ $doctor->online_status === 'online' ? 'Available Now' : ($doctor->online_status === 'away' ? 'Busy' : 'On Leave') }}
+                    </span>
+                </div>
+            </div>
             @php $avgRating = $doctor->doctorReviews->avg('rating'); @endphp
             @if($avgRating > 0)
             <div class="flex items-center gap-1 mt-1 text-xs">

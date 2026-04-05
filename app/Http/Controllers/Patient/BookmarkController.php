@@ -18,7 +18,11 @@ class BookmarkController extends Controller
             ->latest()
             ->paginate(15);
 
-        return view('patient.bookmarks.index', compact('bookmarks'));
+        $collections = \App\Models\BookmarkCollection::where('user_id', auth()->id())
+            ->withCount('items')
+            ->get();
+
+        return view('patient.bookmarks.index', compact('bookmarks', 'collections'));
     }
 
     /** POST /patient/bookmarks/{post}/toggle — add or remove bookmark (Axios JSON) */

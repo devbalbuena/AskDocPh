@@ -25,9 +25,12 @@
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <span class="{{ $appt->status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }} text-xs px-3 py-1 rounded-full capitalize font-medium">
+                <span class="{{ $appt->status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }} text-xs px-3 py-1 rounded-full capitalize font-medium flex items-center">
                     {{ $appt->status }}
                 </span>
+                @if($appt->status === 'confirmed' && \Carbon\Carbon::parse($appt->appointment_date)->isToday())
+                    <span class="appointment-countdown bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap" data-datetime="{{ \Carbon\Carbon::parse($appt->appointment_date->format('Y-m-d') . ' ' . $appt->start_time)->toISOString() }}"></span>
+                @endif
                 <a href="{{ route('patient.appointments.show', $appt) }}" class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg transition-colors">View</a>
                 @if(in_array($appt->status, ['pending', 'confirmed']))
                 <form method="POST" action="{{ route('patient.appointments.cancel', $appt) }}"
@@ -85,6 +88,27 @@ function switchTab(tab) {
         btn.classList.toggle('text-white', t === tab);
         btn.classList.toggle('text-gray-500', t !== tab);
     });
+}
+
+function updateCountdowns() {
+    document.querySelectorAll('.appointment-countdown').forEach(el => {
+        const apptTime = new Date(el.dataset.datetime);
+        const now = new Date();
+        const diff = apptTime - now;
+        if (diff > 0) {
+            const hours = Math.floor(diff / 3600000);
+            const mins = Math.floor((diff % 3600000) / 60000);
+            el.textContent = hours > 0 ? 'In ' + hours + 'h ' + mins + 'm' : 'In ' + mins + 'm';
+        } else {
+            el.textContent = 'Now';
+            el.classList.remove('bg-green-100', 'text-green-700');
+            el.classList.add('bg-red-100', 'text-red-600');
+        }
+    });
+}
+if(document.querySelectorAll('.appointment-countdown').length > 0) {
+    updateCountdowns();
+    setInterval(updateCountdowns, 60000);
 }
 </script>
 @endpush

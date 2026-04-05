@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Http\JsonResponse;
 
 class DoctorDashboardController extends Controller
 {
@@ -68,5 +70,23 @@ class DoctorDashboardController extends Controller
             'completionRate',
             'nextAppointment',
         ));
+    }
+
+    /** POST /doctor/status/update */
+    public function updateStatus(Request $request): JsonResponse
+    {
+        if (auth()->check() && auth()->user()->isDemo()) {
+            // Demo passthrough
+        }
+        
+        $request->validate([
+            'status' => 'required|in:online,away,offline'
+        ]);
+        
+        $user = auth()->user();
+        $user->online_status = $request->status;
+        $user->save();
+        
+        return response()->json(['success' => true, 'status' => $user->online_status]);
     }
 }

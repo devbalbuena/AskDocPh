@@ -60,10 +60,30 @@
 
         {{-- User info at bottom --}}
         @auth
-        <div class="border-t border-green-700 p-4">
+        <div class="border-t border-green-700 p-4 relative">
+            @if(auth()->user()->role === 'doctor')
+            <!-- Status Toggle switch for doctors -->
+            <div class="mb-3 flex items-center justify-between bg-green-900 rounded-lg p-2 border border-green-600">
+                <span class="text-xs text-green-100 font-semibold" id="doc-status-text">
+                    {{ auth()->user()->online_status === 'online' ? 'Available' : 'Do Not Disturb' }}
+                </span>
+                <button onclick="toggleDocStatus()" id="doc-status-toggle" 
+                        class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full focus:outline-none transition-colors ease-in-out duration-200 {{ auth()->user()->online_status === 'online' ? 'bg-green-500' : 'bg-red-500' }}">
+                    <span class="sr-only">Toggle Status</span>
+                    <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ auth()->user()->online_status === 'online' ? 'translate-x-2' : '-translate-x-2' }}" id="doc-status-knob"></span>
+                </button>
+            </div>
+            @endif
+
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center text-sm font-bold text-green-800 flex-shrink-0">
-                    {{ strtoupper(substr(auth()->user()->fname, 0, 1)) }}{{ strtoupper(substr(auth()->user()->lname, 0, 1)) }}
+                <div class="relative w-9 h-9 flex-shrink-0">
+                    <div class="w-full h-full rounded-full bg-white flex items-center justify-center text-sm font-bold text-green-800">
+                        {{ strtoupper(substr(auth()->user()->fname, 0, 1)) }}{{ strtoupper(substr(auth()->user()->lname, 0, 1)) }}
+                    </div>
+                    @if(auth()->user()->role === 'doctor')
+                    <!-- Glowing Dot -->
+                    <span id="doc-status-dot" class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-green-800 {{ auth()->user()->online_status === 'online' ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]' }}"></span>
+                    @endif
                 </div>
                 <div class="overflow-hidden">
                     <p class="text-sm font-medium text-white truncate">{{ auth()->user()->display_name }}</p>
@@ -157,6 +177,116 @@
     </div>
 </div>
 
+@auth
+{{-- Feature P: AI Chatbot (Only for Authenticated Users) --}}
+<div class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <!-- Chat Window (hidden initially) -->
+    <div id="ai-chat-window" style="display: none;" class="w-80 rounded-2xl shadow-2xl bg-white border border-gray-100 mb-4 flex-col">
+        <!-- HEADER -->
+        <div class="bg-green-600 rounded-t-2xl p-4 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                <div>
+                    <div class="text-white font-bold tracking-wide">AskDoc AI</div>
+                    <div class="text-white/80 text-xs">Mental Health Assistant</div>
+                </div>
+            </div>
+            <button onclick="toggleAIChat()" class="text-white/80 hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        
+        <!-- MESSAGES AREA -->
+        <div id="ai-messages" class="h-72 overflow-y-auto p-4 flex flex-col gap-3">
+            <!-- AI Welcome Message -->
+            <div class="self-start bg-gray-100 text-gray-800 rounded-2xl rounded-bl-sm px-4 py-2 text-sm shadow-sm">
+                Hi! I am AskDoc AI, your mental health assistant. How are you feeling today?
+            </div>
+        </div>
+        
+        <!-- INPUT AREA -->
+        <div class="border-t border-gray-100 p-3 flex items-center gap-2">
+            <input type="text" id="ai-input" placeholder="Type how you are feeling..." autocomplete="off"
+                   class="flex-1 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500" 
+                   onkeydown="if(event.key==='Enter') sendAIMessage()">
+            <button onclick="sendAIMessage()" class="bg-green-600 text-white rounded-full p-2 hover:bg-green-700 transition">
+                <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Toggle Button -->
+    <button id="ai-chat-btn" onclick="toggleAIChat()" class="relative w-14 h-14 bg-green-600 hover:bg-green-700 text-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105">
+        <svg class="w-6 h-6 outline-none" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 5.92 2 10.75c0 2.22 1.05 4.25 2.8 5.82L4 21l3.85-2.05A10.66 10.66 0 0012 19.5c5.52 0 10-3.92 10-8.75S17.52 2 12 2zm0 16c-1.37 0-2.67-.25-3.85-.7L5 19l.55-2.5C4.05 15.2 3 13.08 3 10.75 3 6.75 7.03 3.5 12 3.5s9 3.25 9 7.25-4.03 7.25-9 7.25z"></path></svg>
+        <span id="ai-chat-dot" class="absolute top-0 right-0 w-3 h-3 bg-red-500 border-2 border-white rounded-full animate-pulse"></span>
+    </button>
+</div>
+
+<script>
+    function toggleAIChat() {
+        const win = document.getElementById('ai-chat-window');
+        const dot = document.getElementById('ai-chat-dot');
+        if (win.style.display === 'none') {
+            win.style.display = 'flex';
+            if(dot) dot.style.display = 'none'; // hide pulse dot once opened
+        } else {
+            win.style.display = 'none';
+        }
+    }
+
+    function sendAIMessage() {
+        const input = document.getElementById('ai-input');
+        const msg = input.value.trim();
+        if(!msg) return;
+        
+        const msgArea = document.getElementById('ai-messages');
+        
+        // Append user msg
+        const userDiv = document.createElement('div');
+        userDiv.className = 'self-end bg-green-600 text-white rounded-2xl rounded-br-sm px-4 py-2 text-sm shadow-sm max-w-[85%] break-words';
+        userDiv.textContent = msg;
+        msgArea.appendChild(userDiv);
+        
+        input.value = '';
+        msgArea.scrollTop = msgArea.scrollHeight;
+        
+        // Append typing indicator
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'self-start bg-gray-100 text-gray-800 rounded-2xl rounded-bl-sm px-4 py-2 text-sm shadow-sm flex items-center gap-1';
+        typingDiv.id = 'ai-typing';
+        typingDiv.innerHTML = '<span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></span><span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></span><span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>';
+        msgArea.appendChild(typingDiv);
+        msgArea.scrollTop = msgArea.scrollHeight;
+        
+        axios.post('/ai-chat', { message: msg })
+            .then(res => {
+                setTimeout(() => {
+                    const typing = document.getElementById('ai-typing');
+                    if(typing) typing.remove();
+                    
+                    const aiDiv = document.createElement('div');
+                    aiDiv.className = 'self-start bg-gray-100 text-gray-800 rounded-2xl rounded-bl-sm px-4 py-2 text-sm shadow-sm max-w-[90%] break-words';
+                    aiDiv.innerHTML = res.data.response;
+                    
+                    if (res.data.show_find_doctor) {
+                        aiDiv.innerHTML += `<div class="mt-2"><a href="/patient/doctors" class="text-green-600 hover:text-green-800 text-xs font-semibold">Find a Doctor &rarr;</a></div>`;
+                    }
+                    if (res.data.show_crisis) {
+                        aiDiv.innerHTML += `<div class="mt-2"><a href="/patient/dashboard" class="text-red-500 hover:text-red-700 text-xs font-semibold">Get Help Now &rarr;</a></div>`;
+                    }
+                    
+                    msgArea.appendChild(aiDiv);
+                    msgArea.scrollTop = msgArea.scrollHeight;
+                }, 1000);
+            })
+            .catch(err => {
+                const typing = document.getElementById('ai-typing');
+                if(typing) typing.remove();
+            });
+    }
+</script>
+@endauth
+
 {{-- Close dropdown on outside click --}}
 @vite(['resources/js/app.js'])
 
@@ -228,6 +358,43 @@ document.addEventListener('DOMContentLoaded', function () {
     if (flash) setTimeout(() => flash.style.opacity = '0', 3500);
 });
 @endauth
+
+@if(auth()->check() && auth()->user()->role === 'doctor')
+function toggleDocStatus() {
+    const toggle = document.getElementById('doc-status-toggle');
+    const isOnline = toggle.classList.contains('bg-green-500');
+    const nextStatus = isOnline ? 'away' : 'online';
+    
+    axios.post('/doctor/status/update', { status: nextStatus })
+        .then(res => {
+            const status = res.data.status;
+            const knob = document.getElementById('doc-status-knob');
+            const text = document.getElementById('doc-status-text');
+            const dot = document.getElementById('doc-status-dot');
+            
+            if (status === 'online') {
+                toggle.classList.remove('bg-red-500');
+                toggle.classList.add('bg-green-500');
+                knob.classList.remove('-translate-x-2');
+                knob.classList.add('translate-x-2');
+                text.textContent = 'Available';
+                
+                dot.classList.remove('bg-red-500', 'shadow-[0_0_8px_rgba(239,68,68,0.8)]');
+                dot.classList.add('bg-green-400', 'shadow-[0_0_8px_rgba(74,222,128,0.8)]');
+            } else {
+                toggle.classList.remove('bg-green-500');
+                toggle.classList.add('bg-red-500');
+                knob.classList.remove('translate-x-2');
+                knob.classList.add('-translate-x-2');
+                text.textContent = 'Do Not Disturb';
+                
+                dot.classList.remove('bg-green-400', 'shadow-[0_0_8px_rgba(74,222,128,0.8)]');
+                dot.classList.add('bg-red-500', 'shadow-[0_0_8px_rgba(239,68,68,0.8)]');
+            }
+        })
+        .catch(err => alert('Failed to update availability status'));
+}
+@endif
 </script>
 
 <script>

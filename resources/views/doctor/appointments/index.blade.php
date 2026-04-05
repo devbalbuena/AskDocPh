@@ -47,6 +47,10 @@
                     {{ $appt->status }}
                 </span>
 
+                @if($appt->status === 'confirmed' && \Carbon\Carbon::parse($appt->appointment_date)->isToday())
+                    <span class="appointment-countdown bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap" data-datetime="{{ \Carbon\Carbon::parse($appt->appointment_date->format('Y-m-d') . ' ' . $appt->start_time)->toISOString() }}"></span>
+                @endif
+
                 {{-- Quick Accept/Decline for pending only --}}
                 @if($appt->status === 'pending')
                 <div id="quick-actions-{{ $appt->id }}" class="flex gap-2">
@@ -143,6 +147,27 @@ function updateCardStatus(id, newStatus) {
     // Hide quick-action buttons
     const actions = document.getElementById(`quick-actions-${id}`);
     if (actions) actions.remove();
+}
+
+function updateCountdowns() {
+    document.querySelectorAll('.appointment-countdown').forEach(el => {
+        const apptTime = new Date(el.dataset.datetime);
+        const now = new Date();
+        const diff = apptTime - now;
+        if (diff > 0) {
+            const hours = Math.floor(diff / 3600000);
+            const mins = Math.floor((diff % 3600000) / 60000);
+            el.textContent = hours > 0 ? 'In ' + hours + 'h ' + mins + 'm' : 'In ' + mins + 'm';
+        } else {
+            el.textContent = 'Now';
+            el.classList.remove('bg-green-100', 'text-green-700');
+            el.classList.add('bg-red-100', 'text-red-600');
+        }
+    });
+}
+if(document.querySelectorAll('.appointment-countdown').length > 0) {
+    updateCountdowns();
+    setInterval(updateCountdowns, 60000);
 }
 </script>
 @endpush

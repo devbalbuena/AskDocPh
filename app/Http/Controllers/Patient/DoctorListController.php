@@ -16,6 +16,49 @@ class DoctorListController extends Controller
             ->where('doctor_status', 'approved')
             ->with(['doctorApplications.professionalTitles.professionalTitle', 'doctorReviews']);
 
+        $recommendedDoctors = collect();
+        if (auth()->check() && auth()->user()->role === 'patient') {
+            $recentMoods = \App\Models\MoodEntry::where('user_id', auth()->id())
+                ->latest()->take(7)->get();
+            
+            if ($recentMoods->isNotEmpty()) {
+                $avgScore = $recentMoods->avg('score');
+                $keywords = [];
+                if ($avgScore <= 2) {
+                    $keywords[] = 'depression';
+                    $keywords[] = 'psychiatry';
+                }
+                if ($avgScore <= 3) {
+                    $keywords[] = 'anxiety';
+                    $keywords[] = 'psychology';
+                }
+                
+                if (!empty($keywords)) {
+                    $recommendedDoctors = User::where('role', 'doctor')
+                        ->where('doctor_status', 'approved')
+                        ->with(['doctorApplications.professionalTitles.professionalTitle', 'doctorReviews'])
+                        ->get()
+                        ->filter(function($doctor) use ($keywords) {
+                            $bio = is_string($doctor->bio) ? json_decode($doctor->bio, true) : null;
+                            $specialization = is_array($bio) && isset($bio['specialization']) ? strtolower($bio['specialization']) : '';
+                            foreach ($keywords as $kw) {
+                                if (str_contains($specialization, $kw)) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        })
+                        ->map(function($doctor) {
+                            $next = DoctorSchedule::where('doctor_id', $doctor->id)->where('is_available', true)->first();
+                            $doctor->next_available = $next ? ucfirst($next->day_of_week) : null;
+                            $doctor->professional = is_string($doctor->bio) ? json_decode($doctor->bio, true) : [];
+                            return $doctor;
+                        })
+                        ->take(3);
+                }
+            }
+        }
+
         $allDoctors = $query->get();
 
         // Dynamically build list of unique specializations
@@ -68,7 +111,7 @@ class DoctorListController extends Controller
             ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
         );
 
-        return view('patient.doctors.index', compact('doctors', 'specializations'));
+        return view('patient.doctors.index', compact('doctors', 'specializations', 'recommendedDoctors'));
     }
 
     /** GET /patient/doctors/{doctor}/schedule — show available slots */

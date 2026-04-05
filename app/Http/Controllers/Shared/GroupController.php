@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Shared;
 
 use App\Http\Controllers\Controller;
+use App\Models\CommunityPoll;
 use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\Post;
@@ -121,9 +122,18 @@ class GroupController extends Controller
             ->where('status', 'active')
             ->count();
 
+        $isMember = $group->members()
+            ->where('user_id', auth()->id())
+            ->exists();
+
+        $polls = CommunityPoll::where('group_id', $group->id)
+            ->with(['user', 'options', 'votes'])
+            ->latest()
+            ->get();
+
         $layout = $this->layout();
         return view('shared.communities.show', compact(
-            'group', 'membership', 'posts', 'members', 'membersCount', 'layout'
+            'group', 'membership', 'posts', 'members', 'membersCount', 'layout', 'isMember', 'polls'
         ));
     }
 

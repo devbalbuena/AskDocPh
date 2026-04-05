@@ -55,6 +55,14 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828A2 2 0 0110 16.414H8v-2a2 2 0 01.586-1.414z"/></svg>
                             Write Post
                         </button>
+                        @if($isMember)
+                        <button onclick="document.getElementById('create-poll-modal').style.display='flex'" class="inline-flex items-center gap-2 bg-white border border-purple-500 text-purple-600 hover:bg-purple-50 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            Create Poll
+                        </button>
+                        @endif
                     @else
                         <button onclick="joinGroup()" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2.5 rounded-xl transition-colors shadow-sm">
                             Join Community
@@ -147,6 +155,64 @@
                 <div class="mt-6">
                     {{ $posts->links() }}
                 </div>
+
+                {{-- Polls Section --}}
+                @if($polls->count() > 0)
+                <div class="mt-6 space-y-4">
+                    <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Community Polls</h3>
+                    @foreach($polls as $poll)
+                    @php
+                        $totalVotes  = $poll->votes->count();
+                        $userVote    = $poll->votes->where('user_id', auth()->id())->first();
+                        $hasVoted    = !is_null($userVote);
+                        $isExpired   = $poll->ends_at && $poll->ends_at->isPast();
+                        $showResults = $hasVoted || $isExpired;
+                    @endphp
+                    <div class="bg-white border border-purple-100 border-l-4 border-l-purple-500 rounded-2xl p-5 shadow-sm">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full font-medium">📊 Poll</span>
+                            <span class="text-gray-500 text-xs">by {{ $poll->user->fname ?? 'Unknown' }}</span>
+                            @if($isExpired)
+                            <span class="text-red-500 text-xs ml-auto font-medium">Ended</span>
+                            @elseif($poll->ends_at)
+                            <span class="text-gray-400 text-xs ml-auto">Ends {{ $poll->ends_at->diffForHumans() }}</span>
+                            @endif
+                        </div>
+                        <p class="font-semibold text-gray-900 mb-3">{{ $poll->question }}</p>
+
+                        <div class="space-y-2">
+                            @foreach($poll->options as $option)
+                            @php
+                                $voteCount = $poll->votes->where('option_id', $option->id)->count();
+                                $pct       = $totalVotes > 0 ? round($voteCount / $totalVotes * 100) : 0;
+                                $myVote    = $hasVoted && $userVote && $userVote->option_id === $option->id;
+                            @endphp
+                            @if($showResults)
+                            <div class="mb-1">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-700 {{ $myVote ? 'font-semibold text-purple-700' : '' }}">
+                                        {{ $option->text }} {!! $myVote ? '<span>✓</span>' : '' !!}
+                                    </span>
+                                    <span class="text-gray-500">{{ $pct }}%</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-2">
+                                    <div class="h-2 rounded-full {{ $myVote ? 'bg-purple-500' : 'bg-gray-300' }}" style="width: {{ $pct }}%"></div>
+                                </div>
+                            </div>
+                            @else
+                            <button onclick="votePoll({{ $poll->id }}, {{ $option->id }}, {{ $group->id }}, this)"
+                                    class="w-full text-left border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 hover:border-purple-400 hover:bg-purple-50 transition-colors">
+                                {{ $option->text }}
+                            </button>
+                            @endif
+                            @endforeach
+                        </div>
+
+                        <p class="text-xs text-gray-400 mt-3">{{ $totalVotes }} total vote{{ $totalVotes !== 1 ? 's' : '' }}</p>
+                    </div>
+                    @endforeach
+                </div>
+                @endif
             @endif
         </div>
 
@@ -194,6 +260,40 @@
     </div>
 </div>
 
+<div id="create-poll-modal" style="display:none" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-gray-900 text-lg">Create a Poll</h3>
+            <button onclick="document.getElementById('create-poll-modal').style.display='none'" class="text-gray-400 hover:text-gray-600 font-bold ml-auto text-xl leading-none">&times;</button>
+        </div>
+        
+        <form id="create-poll-form">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Question</label>
+                <input type="text" id="poll-question" placeholder="Ask the community..." class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Options</label>
+                <div id="poll-options-container">
+                    <input type="text" class="poll-option w-full border border-gray-300 rounded-xl px-4 py-2 text-sm mb-2 focus:ring-2 focus:ring-purple-500" placeholder="Option 1">
+                    <input type="text" class="poll-option w-full border border-gray-300 rounded-xl px-4 py-2 text-sm mb-2 focus:ring-2 focus:ring-purple-500" placeholder="Option 2">
+                </div>
+                <button type="button" onclick="addPollOption()" class="text-purple-600 text-sm hover:underline font-medium">+ Add Option</button>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">End Date (optional)</label>
+                <input type="datetime-local" id="poll-ends-at" class="w-full border border-gray-300 rounded-xl px-4 py-2 text-sm">
+            </div>
+            
+            <button type="button" onclick="submitPoll({{ $group->id }})" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-xl font-medium text-sm transition-colors mt-2">
+                Create Poll
+            </button>
+        </form>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 function joinGroup() {
@@ -235,6 +335,71 @@ function submitPost() {
             btn.disabled = false;
             btn.textContent = 'Post';
         });
+}
+
+function addPollOption() {
+    const container = document.getElementById('poll-options-container');
+    const count = container.querySelectorAll('.poll-option').length;
+    if (count >= 6) {
+        alert('Maximum 6 options allowed');
+        return;
+    }
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'poll-option w-full border border-gray-300 rounded-xl px-4 py-2 text-sm mb-2 focus:ring-2 focus:ring-purple-500';
+    input.placeholder = 'Option ' + (count + 1);
+    container.appendChild(input);
+}
+
+function submitPoll(groupId) {
+    const question = document.getElementById('poll-question').value.trim();
+    const options = Array.from(document.querySelectorAll('.poll-option'))
+        .map(i => i.value.trim())
+        .filter(v => v !== '');
+    const endsAt = document.getElementById('poll-ends-at').value;
+    
+    if (!question) {
+        alert('Please enter a question');
+        return;
+    }
+    if (options.length < 2) {
+        alert('Please add at least 2 options');
+        return;
+    }
+    
+    const btn = document.querySelector('button[onclick^="submitPoll"]');
+    if (btn) btn.disabled = true;
+
+    axios.post('/communities/' + groupId + '/polls', {
+        question: question,
+        options: options,
+        ends_at: endsAt || null
+    }).then(res => {
+        document.getElementById('create-poll-modal').style.display = 'none';
+        location.reload();
+    }).catch(err => {
+        console.error('Poll error:', err);
+        console.error('Response:', err.response?.data);
+        alert('Error: ' + JSON.stringify(err.response?.data ?? 'Unknown error'));
+        if (btn) btn.disabled = false;
+    });
+}
+
+function votePoll(pollId, optionId, groupId, btn) {
+    const orig = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Voting...';
+
+    axios.post('/communities/' + groupId + '/polls/' + pollId + '/vote', {
+        option_id: optionId
+    }).then(res => {
+        location.reload();
+    }).catch(err => {
+        console.error('Vote error:', err);
+        alert(err.response?.data?.message || 'Could not cast vote.');
+        btn.disabled = false;
+        btn.textContent = orig;
+    });
 }
 </script>
 @endpush

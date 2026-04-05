@@ -10,9 +10,11 @@ use App\Http\Controllers\Shared\NotificationController;
 use App\Http\Controllers\Shared\GroupController;
 use App\Http\Controllers\Shared\HelpRequestController;
 use App\Http\Controllers\Shared\PostAnalyticsController;
+use App\Http\Controllers\Shared\CommunityPollController;
 use App\Http\Controllers\Patient\PatientDashboardController;
 use App\Http\Controllers\Patient\AppointmentController;
 use App\Http\Controllers\Patient\BookmarkController;
+use App\Http\Controllers\Patient\BookmarkCollectionController;
 use App\Http\Controllers\Patient\CrisisReportController;
 use App\Http\Controllers\Patient\DoctorListController;
 use App\Http\Controllers\Patient\MoodTrackerController;
@@ -27,6 +29,7 @@ use App\Http\Controllers\Admin\AdminCrisisReportController;
 use App\Http\Controllers\Admin\AdminAffirmationController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\DoctorReviewController;
+use App\Http\Controllers\AIChatController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Public landing page ──────────────────────────────────────────────────────
@@ -55,6 +58,9 @@ Route::middleware(['auth', 'verified.email'])->group(function () {
     Route::post('/posts/{post}/like', [FeedController::class, 'toggleLike'])->name('posts.like');
     Route::post('/posts/{post}/comments', [FeedController::class, 'comment'])->name('posts.comment');
     Route::post('/posts/{post}/report', [FeedController::class, 'report'])->name('posts.report');
+
+    // Polls
+    Route::post('/polls/{poll}/vote', [CommunityPollController::class, 'vote'])->name('polls.vote');
 
 
     // Notifications
@@ -98,6 +104,8 @@ Route::middleware(['auth', 'verified.email'])->group(function () {
         Route::post('/communities/{group}/join', [GroupController::class, 'join'])->name('communities.join');
         Route::post('/communities/{group}/leave', [GroupController::class, 'leave'])->name('communities.leave');
         Route::post('/communities/{group}/post', [GroupController::class, 'createPost'])->name('communities.post');
+        Route::post('/communities/{group}/polls', [CommunityPollController::class, 'store'])->name('communities.polls.store');
+        Route::post('/communities/{group}/polls/{poll}/vote', [CommunityPollController::class, 'communityVote'])->name('communities.polls.vote');
 
         // Help Requests
         Route::get('/help-requests', [HelpRequestController::class, 'index'])->name('help-requests.index');
@@ -115,6 +123,9 @@ Route::middleware(['auth', 'verified.email'])->group(function () {
 
     // Post Analytics
     Route::get('/profile/analytics', [PostAnalyticsController::class, 'index'])->name('profile.analytics');
+
+    // AI Chatbot
+    Route::post('/ai-chat', [AIChatController::class, 'respond'])->name('ai.chat');
 });
 
 // ─── Patient Routes ───────────────────────────────────────────────────────────
@@ -140,9 +151,16 @@ Route::middleware(['auth', 'verified.email', 'role:patient'])
             Route::get('/doctors', [DoctorListController::class, 'index'])->name('doctors.index');
             Route::get('/doctors/{doctor}/schedule', [DoctorListController::class, 'schedule'])->name('doctors.schedule');
 
-            // Bookmarks
+            // Bookmarks & Collections
             Route::get('/bookmarks', [BookmarkController::class, 'index'])->name('bookmarks.index');
             Route::post('/bookmarks/{post}/toggle', [BookmarkController::class, 'toggle'])->name('bookmarks.toggle');
+
+            Route::get('/bookmarks/collections', [BookmarkCollectionController::class, 'index'])->name('bookmarks.collections.index');
+            Route::post('/bookmarks/collections', [BookmarkCollectionController::class, 'store'])->name('bookmarks.collections.store');
+            Route::get('/bookmarks/collections/{collection}', [BookmarkCollectionController::class, 'show'])->name('bookmarks.collections.show');
+            Route::delete('/bookmarks/collections/{collection}', [BookmarkCollectionController::class, 'destroy'])->name('bookmarks.collections.destroy');
+            Route::post('/bookmarks/collections/{collection}/add', [BookmarkCollectionController::class, 'addItem'])->name('bookmarks.collections.add');
+            Route::delete('/bookmarks/collections/{collection}/items/{item}', [BookmarkCollectionController::class, 'removeItem'])->name('bookmarks.collections.remove');
 
             // Crisis
             Route::post('/crisis-reports', [CrisisReportController::class, 'store'])->name('crisis.store');
@@ -163,6 +181,7 @@ Route::middleware(['auth', 'verified.email', 'role:doctor'])
     ->name('doctor.')
     ->group(function () {
         Route::get('/dashboard', [DoctorDashboardController::class, 'index'])->name('dashboard');
+        Route::post('/status/update', [DoctorDashboardController::class, 'updateStatus'])->name('status.update');
 
         // Schedule (literal routes MUST come before {schedule} wildcard)
         Route::get('/schedule', [DoctorScheduleController::class, 'index'])->name('schedule.index');
