@@ -1,4 +1,4 @@
-@extends('layouts.doctor')
+﻿@extends('layouts.doctor')
 @section('title', 'Appointment Detail')
 @section('page-title', 'Appointment Detail')
 
@@ -21,7 +21,7 @@
     @endif
 
     {{-- Detail card --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <h2 class="text-lg font-semibold text-gray-900">Appointment Details</h2>
             <span class="
@@ -41,34 +41,34 @@
                     {{ strtoupper(substr($appointment->patient->fname ?? '?', 0, 1)) }}
                 </div>
                 <div>
-                    <p class="text-gray-900 font-semibold text-lg">{{ $appointment->patient->display_name ?? 'Unknown' }}</p>
+                    <p class="text-gray-900 dark:text-gray-100 font-semibold text-lg">{{ $appointment->patient->display_name ?? 'Unknown' }}</p>
                     <p class="text-gray-400 text-sm">{{ $appointment->patient->email ?? '' }}</p>
                 </div>
             </div>
 
             {{-- Info grid --}}
             <div class="grid grid-cols-2 gap-4">
-                <div class="bg-gray-50 rounded-xl p-4">
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
                     <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Date</p>
                     <p class="text-gray-900 font-medium">{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('D, M d Y') }}</p>
                 </div>
-                <div class="bg-gray-50 rounded-xl p-4">
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
                     <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Time</p>
                     <p class="text-gray-900 font-medium">{{ $startFmt }} – {{ $endFmt }}</p>
                 </div>
-                <div class="bg-gray-50 rounded-xl p-4">
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
                     <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Type</p>
                     <p class="text-gray-900 font-medium">{{ $typeLabel }}</p>
                 </div>
                 @if($appointment->meeting_link)
-                <div class="bg-gray-50 rounded-xl p-4">
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
                     <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Meeting Link</p>
                     <a href="{{ $appointment->meeting_link }}" target="_blank" class="text-green-600 text-sm hover:underline break-all">Join Call</a>
                 </div>
                 @endif
             </div>
 
-            <div class="bg-gray-50 rounded-xl p-4">
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
                 <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Reason</p>
                 <p class="text-gray-900 text-sm">{{ $appointment->reason }}</p>
             </div>
@@ -107,18 +107,18 @@
     </div>
 
     {{-- Notes --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 space-y-4">
         <h3 class="text-base font-semibold text-gray-900">Appointment Notes</h3>
 
         @forelse($appointment->notes as $note)
-        <div class="bg-gray-50 rounded-xl p-4 space-y-2 border border-gray-100">
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 space-y-2 border border-gray-100">
             <div class="flex items-center justify-between">
                 <p class="text-xs text-gray-400">{{ $note->created_at->format('M d, Y g:i A') }}</p>
                 <span class="{{ $note->is_visible_to_patient ? 'text-green-600' : 'text-gray-400' }} text-xs">
                     {{ $note->is_visible_to_patient ? '👁 Visible to patient' : '🔒 Private' }}
                 </span>
             </div>
-            <p class="text-gray-700 text-sm">{{ $note->notes }}</p>
+            <p class="text-gray-700 dark:text-gray-300 text-sm">{{ $note->notes }}</p>
             @if($note->diagnosis)
             <p class="text-xs text-gray-400"><span class="font-medium text-gray-500">Diagnosis:</span> {{ $note->diagnosis }}</p>
             @endif
@@ -131,15 +131,15 @@
         @endforelse
 
         {{-- Add Note Form --}}
-        <form method="POST" action="{{ route('doctor.appointments.notes.store', $appointment) }}" class="space-y-3 pt-3 border-t border-gray-100">
+        <form method="POST" action="{{ route('doctor.appointments.notes.store', $appointment) }}" class="space-y-3 pt-3 border-t border-gray-100 dark:border-gray-700">
             @csrf
             <h4 class="text-sm font-medium text-gray-900">Add Note</h4>
             <textarea name="notes" rows="3" placeholder="Clinical notes…"
-                class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 resize-none" required></textarea>
+                class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 resize-none" required></textarea>
             <input type="text" name="diagnosis" placeholder="Diagnosis (optional)"
-                class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500">
+                class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500">
             <input type="text" name="recommendations" placeholder="Recommendations (optional)"
-                class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500">
+                class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500">
             <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                 <input type="checkbox" name="is_visible_to_patient" value="1" class="w-4 h-4 accent-green-600">
                 Visible to patient
@@ -152,7 +152,7 @@
 {{-- Refer Patient Modal --}}
 <div id="refer-modal" style="display:none"
      class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
             <h3 class="text-base font-semibold text-gray-900">Refer Patient to Another Doctor</h3>
             <button onclick="document.getElementById('refer-modal').style.display='none'"
@@ -161,7 +161,7 @@
 
         <div class="px-6 py-5 space-y-4">
             {{-- Patient info --}}
-            <div class="bg-gray-50 rounded-xl px-4 py-3 text-sm">
+            <div class="bg-gray-50 dark:bg-gray-700 rounded-xl px-4 py-3 text-sm">
                 <span class="text-gray-500">Referring patient:</span>
                 <span class="font-semibold text-gray-900 ml-1">{{ $appointment->patient->display_name ?? 'Unknown' }}</span>
             </div>
@@ -170,7 +170,7 @@
             <div>
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Refer to Doctor <span class="text-red-500">*</span></label>
                 <select id="refer-doctor"
-                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-indigo-500">
+                        class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-indigo-500">
                     <option value="">Select a doctor...</option>
                     @foreach($verifiedDoctors as $doc)
                         @php
@@ -188,7 +188,7 @@
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Reason <span class="text-red-500">*</span></label>
                 <input type="text" id="refer-reason" maxlength="255"
                        placeholder="e.g. Needs specialist evaluation for anxiety..."
-                       class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-indigo-500">
+                       class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-indigo-500">
             </div>
 
             {{-- Notes --}}
@@ -196,13 +196,13 @@
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Additional Notes <span class="text-gray-400">(optional)</span></label>
                 <textarea id="refer-message" rows="3" maxlength="1000"
                           placeholder="Background context, clinical notes..."
-                          class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                          class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
             </div>
         </div>
 
-        <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
+        <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3">
             <button onclick="document.getElementById('refer-modal').style.display='none'"
-                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm px-4 py-2 rounded-lg transition-colors">Cancel</button>
+                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm px-4 py-2 rounded-lg transition-colors">Cancel</button>
             <button id="refer-submit-btn" onclick="submitReferral({{ $appointment->id }})"
                     class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors">Send Referral</button>
         </div>

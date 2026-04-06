@@ -1,4 +1,4 @@
-@extends($layout)
+﻿@extends($layout)
 @section('title', ($profileUser->display_name ?? $profileUser->username) . ' — Profile')
 @section('page-title', 'Profile')
 
@@ -6,7 +6,7 @@
 <div class="max-w-3xl mx-auto space-y-5">
 
     {{-- ── Profile Header Card ─────────────────────────── --}}
-    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden">
 
         {{-- Cover banner --}}
         @if($profileUser->cover_photo)
@@ -40,7 +40,7 @@
                     @if($isOwnProfile)
                     {{-- Own profile: show Edit link --}}
                     <a href="{{ route('profile.edit') }}"
-                       class="inline-flex items-center gap-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors">
+                       class="inline-flex items-center gap-2 bg-white border border-gray-300 text-gray-700 dark:text-gray-300 text-sm font-medium px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 2.828L11.828 15.828A2 2 0 0110 16.414H8v-2a2 2 0 01.586-1.414z"/>
                         </svg>
@@ -72,7 +72,7 @@
                     {{-- Message Button: hidden if admin viewing or viewing admin --}}
                     @if(auth()->user()->role !== 'admin' && $profileUser->role !== 'admin')
                     <button onclick="startConversation({{ $profileUser->id }})"
-                            class="ml-2 inline-flex items-center gap-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
+                            class="ml-2 inline-flex items-center gap-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 dark:text-gray-300 text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
                         <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                         </svg>
@@ -135,7 +135,7 @@
             $professional = json_decode($profileUser->bio ?? '{}', true) ?? [];
             @endphp
             @if(!empty($professional['specialization']))
-            <p class="text-gray-500 text-sm mb-4">
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-4">
                 {{ $professional['specialization'] }}
             </p>
             @endif
@@ -162,7 +162,7 @@
 
     {{-- ── Followers / Following Modal ──────────────────── --}}
     <div id="social-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[70vh] flex flex-col overflow-hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md max-h-[70vh] flex flex-col overflow-hidden">
             <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200">
                 <h3 id="modal-title" class="text-base font-semibold text-gray-900">Followers</h3>
                 <button onclick="closeModal()" class="text-gray-400 hover:text-gray-700 transition-colors">
@@ -189,7 +189,7 @@
         @if($posts->count())
         <div class="space-y-4">
             @foreach($posts as $post)
-            <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-5">
 
                 {{-- Post header --}}
                 <div class="flex items-center gap-3 mb-3">
@@ -225,7 +225,7 @@
                 @endif
 
                 {{-- Like count --}}
-                <div class="flex items-center gap-3 pt-2 border-t border-gray-100 text-xs text-gray-400">
+                <div class="flex items-center gap-3 pt-2 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-400">
                     <span class="flex items-center gap-1">
                         <svg class="w-3.5 h-3.5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
@@ -246,7 +246,7 @@
         @endif
 
         @else
-        <div class="bg-white border border-gray-200 rounded-2xl p-10 text-center shadow-sm">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-10 text-center shadow-sm">
             <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             list.innerHTML = res.data.data.map(u => `
                 <a href="${u.profile_url}"
-                   class="flex items-center gap-3 px-3 py-3 hover:bg-gray-50 rounded-xl transition-colors">
+                   class="flex items-center gap-3 px-3 py-3 hover:bg-gray-50 dark:bg-gray-700 rounded-xl transition-colors">
                     <div class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center text-sm font-bold text-green-700 flex-shrink-0">
                         ${u.display_name.charAt(0).toUpperCase()}
                     </div>

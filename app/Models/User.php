@@ -44,6 +44,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'id_document_path',
         'id_verified_at',
         'id_verification_status',
+        'dark_mode',
     ];
 
     /**

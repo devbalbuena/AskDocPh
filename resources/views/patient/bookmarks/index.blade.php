@@ -1,4 +1,4 @@
-@extends('layouts.patient')
+﻿@extends('layouts.patient')
 @section('title', 'My Bookmarks')
 @section('page-title', 'Bookmarks')
 
@@ -34,12 +34,12 @@
     <!-- CONTENT -->
     <div class="flex-1 space-y-4">
         @if(isset($collection) && $collection->description)
-        <p class="text-gray-500 text-sm mb-4 px-2">{{ $collection->description }}</p>
+        <p class="text-gray-500 dark:text-gray-400 text-sm mb-4 px-2">{{ $collection->description }}</p>
         @endif
 
         @forelse($bookmarks as $bm)
         @php $post = $bm->post; @endphp
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6" id="bookmark-card-{{ $post->id }}">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6" id="bookmark-card-{{ $post->id }}">
             <div class="flex items-start justify-between gap-4">
                 <div class="flex items-start gap-3 flex-1 min-w-0">
                     <div class="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center text-sm font-bold text-green-700 flex-shrink-0">
@@ -48,7 +48,7 @@
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium text-gray-900">{{ $post->user->display_name ?? 'Unknown' }}</p>
                         <p class="text-xs text-gray-500">{{ $post->created_at->diffForHumans() }}</p>
-                        <p class="text-gray-700 text-sm mt-2 line-clamp-3">{{ $post->text_content }}</p>
+                        <p class="text-gray-700 dark:text-gray-300 text-sm mt-2 line-clamp-3">{{ $post->text_content }}</p>
                         @if($post->media->isNotEmpty())
                         <div class="mt-2 flex gap-2 overflow-x-auto">
                             @foreach($post->media->take(3) as $media)
@@ -97,7 +97,7 @@
             </div>
         </div>
         @empty
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center">
             <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
             <p class="text-gray-500 font-medium pt-1">No bookmarks found</p>
             <a href="{{ url('/feed') }}" class="mt-3 inline-block bg-green-600 hover:bg-green-700 text-white text-sm px-5 py-2.5 rounded-lg transition-colors">Go to Feed</a>
@@ -111,7 +111,7 @@
 
 <!-- New Collection Modal -->
 <div id="col-modal" class="fixed inset-0 z-50 bg-gray-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-6">
         <h3 class="text-lg font-bold text-gray-900 mb-4">New Collection</h3>
         <input type="text" id="col-name" placeholder="Collection Name" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm mb-3 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500">
         <textarea id="col-desc" placeholder="Description (Optional)" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm mb-4 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 min-h-[80px]"></textarea>

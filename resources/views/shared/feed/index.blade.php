@@ -1,4 +1,4 @@
-@extends($layout)
+﻿@extends($layout)
 @section('title', 'Feed')
 @section('page-title', 'Feed')
 
@@ -6,7 +6,7 @@
 <div class="max-w-2xl mx-auto space-y-5">
 
     {{-- Post Composer --}}
-    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-5">
         <div class="flex items-start gap-3">
             <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-sm font-bold text-green-700 flex-shrink-0">
                 {{ strtoupper(substr(auth()->user()->fname, 0, 1)) }}
@@ -35,7 +35,7 @@
                 </div>
 
                 {{-- Link Preview Card --}}
-                <div id="link-preview-card" class="hidden mt-2 border border-gray-200 bg-gray-50 rounded-xl p-3 flex items-center gap-3">
+                <div id="link-preview-card" class="hidden mt-2 border border-gray-200 bg-gray-50 dark:bg-gray-700 rounded-xl p-3 flex items-center gap-3">
                     <div class="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
                         <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
                     </div>
@@ -83,7 +83,7 @@
             $isAnonymous = str_starts_with($post->text_content ?? '', '[ANONYMOUS]');
             $textContent = $isAnonymous ? substr($post->text_content, 11) : $post->text_content;
         @endphp
-        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-5" id="post-{{ $post->id }}">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-5" id="post-{{ $post->id }}">
 
             {{-- Post header --}}
             <div class="flex items-center gap-3 mb-3">
@@ -176,13 +176,13 @@
 
             {{-- Link preview --}}
             @if($post->link_url)
-            <div class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-3">
+            <div class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 mb-3">
                 <a href="{{ $post->link_url }}" target="_blank" class="text-green-600 hover:text-green-700 text-xs break-all transition-colors">{{ $post->link_url }}</a>
             </div>
             @endif
 
             {{-- Action Bar --}}
-            <div class="flex items-center gap-4 pt-2 border-t border-gray-100">
+            <div class="flex items-center gap-4 pt-2 border-t border-gray-100 dark:border-gray-700">
 
                 {{-- Emoji Reaction Wrapper --}}
                 <div class="relative inline-block reaction-wrapper"
@@ -197,7 +197,7 @@
                     </button>
                     {{-- Emoji picker row --}}
                     <div id="reaction-picker-{{ $post->id }}"
-                         class="reaction-picker hidden absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-2xl shadow-xl p-1.5 flex gap-0.5 z-10 whitespace-nowrap"
+                         class="reaction-picker hidden absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl p-1.5 flex gap-0.5 z-10 whitespace-nowrap"
                          onmouseenter="cancelHideReactionPicker({{ $post->id }})"
                          onmouseleave="scheduleHideReactionPicker({{ $post->id }})">
                         @foreach(['❤️' => 'heart', '😢' => 'sad', '😮' => 'wow', '😂' => 'haha', '👍' => 'like'] as $emoji => $type)
@@ -234,7 +234,7 @@
             <div id="comments-{{ $post->id }}" class="hidden mt-4 space-y-3">
                 <div id="comment-list-{{ $post->id }}" class="space-y-2">
                     @foreach($post->comments->take(5) as $comment)
-                    <div class="p-2 border-t border-gray-100 text-sm">
+                    <div class="p-2 border-t border-gray-100 dark:border-gray-700 text-sm">
                         <span class="font-semibold text-gray-800">{{ $comment->user->display_name ?? 'Unknown' }}</span>
                         <span class="text-gray-700 ml-1">{{ $comment->comment_text }}</span>
                         <span class="text-xs text-gray-400 ml-2">{{ $comment->created_at->diffForHumans() }}</span>
@@ -244,7 +244,7 @@
                 <form class="comment-form flex gap-2 items-end" data-post-id="{{ $post->id }}">
                     @csrf
                     <textarea name="comment_text" rows="2" placeholder="Write a comment..."
-                              class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 resize-none transition-colors"></textarea>
+                              class="flex-1 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 resize-none transition-colors"></textarea>
                     <button type="submit"
                             class="bg-green-600 hover:bg-green-700 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors flex-shrink-0">
                         Send
@@ -317,7 +317,7 @@
     @if($posts->hasPages())
     <div class="flex justify-center">
         <button id="load-more-btn" onclick="loadMore()" data-page="2"
-                class="bg-white hover:bg-gray-50 border border-gray-200 text-gray-500 hover:text-gray-900 text-sm px-6 py-3 rounded-xl transition-colors">
+                class="bg-white hover:bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-500 hover:text-gray-900 text-sm px-6 py-3 rounded-xl transition-colors">
             Load More Posts
         </button>
     </div>
@@ -333,7 +333,7 @@
 {{-- Report Post Modal --}}
 <div id="report-modal" class="fixed inset-0 z-50 hidden flex items-start justify-center pt-24 px-4">
     <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeReportModal()"></div>
-    <div class="relative z-10 bg-white rounded-2xl shadow-2xl w-full max-w-md">
+    <div class="relative z-10 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
             <h3 class="text-base font-semibold text-gray-900">Report Post</h3>
             <button onclick="closeReportModal()" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors text-xl leading-none">&times;</button>
@@ -343,7 +343,7 @@
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Reason <span class="text-red-500">*</span></label>
                 <select id="report-reason"
                         onchange="document.getElementById('report-submit-btn').disabled = !this.value"
-                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500 transition-colors">
+                        class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500 transition-colors">
                     <option value="">Select a reason...</option>
                     <option value="spam">Spam</option>
                     <option value="inappropriate">Inappropriate Content</option>
@@ -355,11 +355,11 @@
             <div>
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Additional Details <span class="text-gray-400">(optional)</span></label>
                 <textarea id="report-details" rows="3" placeholder="Describe the issue in more detail..."
-                          class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 resize-none transition-colors"></textarea>
+                          class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 resize-none transition-colors"></textarea>
             </div>
         </div>
-        <div class="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
-            <button onclick="closeReportModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm px-4 py-2 rounded-lg transition-colors">Cancel</button>
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+            <button onclick="closeReportModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 dark:text-gray-300 text-sm px-4 py-2 rounded-lg transition-colors">Cancel</button>
             <button id="report-submit-btn" onclick="submitReport()" disabled
                     class="bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors">
                 Submit Report
@@ -654,7 +654,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (res.data.success) {
                         const list = document.getElementById('comment-list-' + postId);
                         const div  = document.createElement('div');
-                        div.className = 'p-2 border-t border-gray-100 text-sm';
+                        div.className = 'p-2 border-t border-gray-100 dark:border-gray-700 text-sm';
                         div.innerHTML =
                             `<span class="font-semibold text-gray-800">${res.data.comment.author}</span>` +
                             ` <span class="text-gray-700">${res.data.comment.text}</span>` +

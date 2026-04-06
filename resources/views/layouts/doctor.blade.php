@@ -18,7 +18,7 @@ $nav = [
 @foreach($nav as $item)
 <a href="{{ $item['href'] }}"
    class="sidebar-nav-link flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all duration-150
-          {{ str_starts_with(request()->url(), $item['href']) ? 'bg-green-600 text-white border-l-4 border-white' : 'text-gray-200 hover:text-white hover:bg-green-700 border-l-4 border-transparent' }}">
+          {{ str_starts_with(request()->url(), $item['href']) ? 'bg-green-600 dark:bg-gray-700 text-white border-l-4 border-white' : 'text-gray-200 dark:text-gray-400 hover:text-white hover:bg-green-700 dark:hover:bg-gray-800 border-l-4 border-transparent' }}">
     <div class="flex items-center gap-3">
         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="{{ $item['icon'] }}"/>

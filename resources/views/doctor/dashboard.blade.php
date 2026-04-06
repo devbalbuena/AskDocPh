@@ -1,4 +1,4 @@
-@extends('layouts.doctor')
+﻿@extends('layouts.doctor')
 @section('title', 'Dashboard')
 @section('page-title', 'Doctor Dashboard')
 
@@ -7,7 +7,7 @@
 
     @if(!auth()->user()->isVerifiedDoctor() && !auth()->user()->isDemo())
     {{-- Status Tracker --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 mb-6">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-8 mb-6">
         <h3 class="text-lg font-bold text-gray-900 mb-6">Verification Progress</h3>
         
         @php
@@ -133,9 +133,9 @@
 
     @if($nextAppointment)
     {{-- Next Appointment --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <p class="text-gray-500 text-sm font-medium uppercase tracking-wider mb-1">Next Upcoming Appointment</p>
+            <p class="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider mb-1">Next Upcoming Appointment</p>
             <h3 class="text-xl font-bold text-gray-900">{{ $nextAppointment->patient->display_name ?? 'Unknown' }}</h3>
             <p class="text-gray-700 mt-1 text-sm">
                 {{ \Carbon\Carbon::parse($nextAppointment->appointment_date)->format('D, M d Y') }} • 
@@ -152,26 +152,26 @@
 
     {{-- Stats --}}
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
             <p class="text-3xl font-bold text-gray-900">{{ $totalPatients }}</p>
-            <p class="text-gray-500 text-sm mt-1">Total Patients</p>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Total Patients</p>
         </div>
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
             <p class="text-3xl font-bold text-gray-900">{{ $totalCount }}</p>
-            <p class="text-gray-500 text-sm mt-1">Total Appointments</p>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Total Appointments</p>
         </div>
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
             <p class="text-3xl font-bold text-gray-900">{{ $weekAppointments }}</p>
-            <p class="text-gray-500 text-sm mt-1">This Week's Appointments</p>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">This Week's Appointments</p>
         </div>
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-center items-start">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col justify-center items-start">
             <span class="bg-green-100 text-green-700 text-2xl font-bold px-3 py-1 rounded-full mb-1">{{ $completionRate }}%</span>
-            <p class="text-gray-500 text-sm mt-1">Completion Rate</p>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Completion Rate</p>
         </div>
     </div>
 
     {{-- Today's Appointments --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200">
             <h3 class="font-semibold text-gray-900">Today's Appointments — {{ now()->format('M d') }}</h3>
             <a href="{{ route('doctor.appointments.index') }}" class="text-green-600 text-xs hover:text-green-700">View all →</a>
@@ -194,7 +194,7 @@
         </div>
         @empty
         <div class="px-5 py-10 text-center">
-            <p class="text-gray-500 text-sm">No appointments scheduled for today.</p>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">No appointments scheduled for today.</p>
         </div>
         @endforelse
     </div>

@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 @section('title', 'Admin Dashboard')
 @section('page-title', 'Admin Dashboard')
 
@@ -33,7 +33,7 @@
         $colorMap = ['blue' => 'bg-blue-100 text-blue-700', 'green' => 'bg-green-100 text-green-700', 'yellow' => 'bg-yellow-100 text-yellow-700'];
         @endphp
         @foreach($cards as $card)
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex items-center gap-4">
             <div class="w-12 h-12 rounded-xl {{ $colorMap[$card['color']] }} flex items-center justify-center flex-shrink-0">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $card['icon'] }}"/>
@@ -41,7 +41,7 @@
             </div>
             <div>
                 <p class="text-2xl font-bold text-gray-900">{{ number_format($card['value']) }}</p>
-                <p class="text-gray-500 text-sm">{{ $card['label'] }}</p>
+                <p class="text-gray-500 dark:text-gray-400 text-sm">{{ $card['label'] }}</p>
             </div>
         </div>
         @endforeach
@@ -69,13 +69,13 @@
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
         {{-- Registrations Chart --}}
-        <div class="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="xl:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
             <h3 class="text-base font-semibold text-gray-900 mb-4">New Registrations — Last 7 Days</h3>
             <canvas id="registrationsChart" height="120"></canvas>
         </div>
 
         {{-- Recent Crisis Reports --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-base font-semibold text-gray-900">Recent Crisis Reports</h3>
                 <a href="{{ route('admin.crisis.index') }}" class="text-green-600 text-xs hover:text-green-700">View all →</a>
@@ -94,13 +94,13 @@
                 <p class="text-xs text-gray-600 mt-1">{{ $report->created_at->diffForHumans() }}</p>
             </div>
             @empty
-            <p class="text-gray-500 text-sm text-center py-4">No crisis reports.</p>
+            <p class="text-gray-500 dark:text-gray-400 text-sm text-center py-4">No crisis reports.</p>
             @endforelse
         </div>
     </div>
 
     {{-- Recent Doctor Applications --}}
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200">
             <h3 class="text-base font-semibold text-gray-900">Recent Doctor Applications</h3>
             <a href="{{ route('admin.doctor-applications.index') }}" class="text-green-600 text-xs hover:text-green-700">View all →</a>

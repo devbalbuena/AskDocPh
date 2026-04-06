@@ -11,6 +11,7 @@ use App\Http\Controllers\Shared\GroupController;
 use App\Http\Controllers\Shared\HelpRequestController;
 use App\Http\Controllers\Shared\PostAnalyticsController;
 use App\Http\Controllers\Shared\CommunityPollController;
+use App\Http\Controllers\Shared\SettingsController;
 use App\Http\Controllers\Patient\PatientDashboardController;
 use App\Http\Controllers\Patient\AppointmentController;
 use App\Http\Controllers\Patient\BookmarkController;
@@ -67,6 +68,9 @@ Route::middleware(['auth', 'verified.email'])->group(function () {
 
     // Announcements dismiss
     Route::post('/announcements/{announcement}/dismiss', [AnnouncementController::class, 'dismiss'])->name('announcements.dismiss');
+
+    // Settings
+    Route::post('/settings/dark-mode', [SettingsController::class, 'toggleDarkMode'])->name('settings.darkmode');
 
 
     // Notifications

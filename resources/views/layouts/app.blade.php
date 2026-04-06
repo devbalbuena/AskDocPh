@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+      class="h-full {{ auth()->check() && auth()->user()->dark_mode ? 'dark' : '' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     @stack('head')
 </head>
-<body class="h-full bg-gray-50 text-gray-900 font-['Inter'] antialiased">
+<body class="h-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-['Inter'] antialiased">
 <div id="page-loader" 
     style="position:fixed;top:0;left:0;
     width:100%;height:100%;
@@ -44,7 +45,7 @@
 <div class="flex h-screen overflow-hidden">
 
     {{-- ── Sidebar ──────────────────────────────────────── --}}
-    <aside class="w-64 bg-green-800 flex flex-col flex-shrink-0">
+    <aside class="w-64 bg-green-800 dark:bg-gray-900 flex flex-col flex-shrink-0 border-r dark:border-gray-700">
         {{-- Logo --}}
         <div class="flex items-center px-6 py-5 bg-green-800">
             <a href="{{ url('/') }}">
@@ -60,7 +61,7 @@
 
         {{-- User info at bottom --}}
         @auth
-        <div class="border-t border-green-700 p-4 relative">
+        <div class="border-t border-green-700 dark:border-gray-700 p-4 relative dark:bg-gray-900">
             @if(auth()->user()->role === 'doctor')
             <!-- Status Toggle switch for doctors -->
             <div class="mb-3 flex items-center justify-between bg-green-900 rounded-lg p-2 border border-green-600">
@@ -98,16 +99,16 @@
     <div class="flex-1 flex flex-col overflow-hidden">
 
         {{-- Top Navbar --}}
-        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 flex-shrink-0">
-            <h2 class="text-lg font-semibold text-gray-900">@yield('page-title', 'Dashboard')</h2>
+        <header class="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 flex-shrink-0">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">@yield('page-title', 'Dashboard')</h2>
 
             <div class="flex items-center gap-4">
                 {{-- Search --}}
-                <div class="hidden md:flex items-center bg-white border border-gray-200 rounded-lg px-3 py-2 gap-2 w-56">
-                    <svg class="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="hidden md:flex items-center bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 gap-2 w-56">
+                    <svg class="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
                     </svg>
-                    <input type="text" placeholder="Search AskDocPH..." class="bg-transparent text-sm text-gray-900 placeholder-gray-400 focus:outline-none w-full">
+                    <input type="text" placeholder="Search AskDocPH..." class="bg-transparent text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none w-full">
                 </div>
 
                 {{-- Messages --}}
@@ -118,6 +119,24 @@
                     </svg>
                     <span id="msg-badge" class="absolute -top-0.5 -right-0.5 bg-green-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
                 </a>
+
+                {{-- Dark Mode Toggle --}}
+                <button id="dark-mode-btn" onclick="toggleDarkMode()"
+                        class="p-2 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 rounded-lg transition-colors"
+                        title="Toggle dark mode">
+                    {{-- Moon icon (light mode) --}}
+                    <svg id="dark-icon" class="w-5 h-5 {{ auth()->check() && auth()->user()->dark_mode ? 'hidden' : '' }}"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                    </svg>
+                    {{-- Sun icon (dark mode) --}}
+                    <svg id="light-icon" class="w-5 h-5 {{ auth()->check() && auth()->user()->dark_mode ? '' : 'hidden' }}"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                </button>
 
                 {{-- Notification Bell --}}
                 <a href="{{ route('notifications.index') }}" class="relative p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-white transition-colors">
@@ -188,7 +207,7 @@
         @endif
 
         {{-- Page Content --}}
-        <main class="flex-1 overflow-y-auto p-6">
+        <main class="flex-1 overflow-y-auto p-6 dark:bg-gray-900">
             @yield('content')
         </main>
     </div>
@@ -443,6 +462,30 @@ function dismissAnnouncement(id) {
             }
         })
         .catch(() => {}); // Silent fail — UX shouldn't block on this
+}
+</script>
+
+<script>
+// ── Dark Mode Toggle ─────────────────────────────────────────
+function toggleDarkMode() {
+    axios.post('/settings/dark-mode')
+        .then(res => {
+            const isDark = res.data.dark_mode;
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('dark-icon')?.classList.add('hidden');
+                document.getElementById('light-icon')?.classList.remove('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('dark-icon')?.classList.remove('hidden');
+                document.getElementById('light-icon')?.classList.add('hidden');
+            }
+        })
+        .catch(err => {
+            if (err.response?.status === 403) {
+                alert(err.response.data.error ?? 'Not available for demo accounts.');
+            }
+        });
 }
 </script>
 

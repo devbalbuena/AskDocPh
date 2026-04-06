@@ -1,4 +1,4 @@
-@extends($layout)
+﻿@extends($layout)
 @section('title', 'Notifications')
 @section('page-title', 'Notifications')
 
@@ -6,7 +6,7 @@
 <div class="max-w-3xl mx-auto space-y-4">
 
     {{-- Header card --}}
-    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 flex items-center justify-between">
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-5 flex items-center justify-between">
         <div>
             <h2 class="text-base font-semibold text-gray-900">All Notifications</h2>
             <p class="text-xs text-gray-500 mt-0.5">
@@ -19,7 +19,7 @@
     </div>
 
     {{-- Notification list --}}
-    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-100">
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm overflow-hidden divide-y divide-gray-100">
 
         @forelse($notifications as $notif)
         <div id="notif-row-{{ $notif->id }}"
