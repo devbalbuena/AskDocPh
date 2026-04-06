@@ -16,7 +16,8 @@ class CommunityPoll extends Model
     ];
 
     protected $casts = [
-        'ends_at' => 'datetime',
+        'ends_at'    => 'datetime',
+        'expires_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

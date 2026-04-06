@@ -258,7 +258,8 @@
             @php 
                 $poll = $polls[$pollIndex++];
                 $hasVoted = count($poll->votes->where('user_id', auth()->id())) > 0;
-                $isExpired = $poll->expires_at && $poll->expires_at->isPast();
+                $pollExpiresAt = $poll->expires_at ? \Carbon\Carbon::parse($poll->expires_at) : null;
+                $isExpired = $pollExpiresAt && $pollExpiresAt->isPast();
                 $showResults = $hasVoted || $isExpired;
                 $totalVotes = $poll->votes_count;
             @endphp
@@ -303,8 +304,8 @@
                     <span>{{ $totalVotes }} vote{{ $totalVotes !== 1 ? 's' : '' }}</span>
                     @if($isExpired)
                         <span class="text-red-500">Poll Ended</span>
-                    @elseif($poll->expires_at)
-                        <span>Ends {{ $poll->expires_at->diffForHumans() }}</span>
+                    @elseif($pollExpiresAt)
+                        <span>Ends {{ $pollExpiresAt->diffForHumans() }}</span>
                     @endif
                 </div>
             </div>

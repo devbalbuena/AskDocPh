@@ -165,7 +165,8 @@
                         $totalVotes  = $poll->votes->count();
                         $userVote    = $poll->votes->where('user_id', auth()->id())->first();
                         $hasVoted    = !is_null($userVote);
-                        $isExpired   = $poll->ends_at && $poll->ends_at->isPast();
+                        $pollExp     = $poll->expires_at ? \Carbon\Carbon::parse($poll->expires_at) : null;
+                        $isExpired   = $pollExp && $pollExp->isPast();
                         $showResults = $hasVoted || $isExpired;
                     @endphp
                     <div class="bg-white border border-purple-100 border-l-4 border-l-purple-500 rounded-2xl p-5 shadow-sm">
@@ -174,8 +175,8 @@
                             <span class="text-gray-500 text-xs">by {{ $poll->user->fname ?? 'Unknown' }}</span>
                             @if($isExpired)
                             <span class="text-red-500 text-xs ml-auto font-medium">Ended</span>
-                            @elseif($poll->ends_at)
-                            <span class="text-gray-400 text-xs ml-auto">Ends {{ $poll->ends_at->diffForHumans() }}</span>
+                            @elseif($pollExp)
+                            <span class="text-gray-400 text-xs ml-auto">Ends {{ $pollExp->diffForHumans() }}</span>
                             @endif
                         </div>
                         <p class="font-semibold text-gray-900 mb-3">{{ $poll->question }}</p>

@@ -29,6 +29,8 @@ use App\Http\Controllers\Admin\AdminDoctorApplicationController;
 use App\Http\Controllers\Admin\AdminCrisisReportController;
 use App\Http\Controllers\Admin\AdminAffirmationController;
 use App\Http\Controllers\Admin\AdminReportController;
+use App\Http\Controllers\Admin\AdminAnnouncementController;
+use App\Http\Controllers\Shared\AnnouncementController;
 use App\Http\Controllers\DoctorReviewController;
 use App\Http\Controllers\AIChatController;
 use Illuminate\Support\Facades\Route;
@@ -62,6 +64,9 @@ Route::middleware(['auth', 'verified.email'])->group(function () {
 
     // Polls
     Route::post('/polls/{poll}/vote', [CommunityPollController::class, 'vote'])->name('polls.vote');
+
+    // Announcements dismiss
+    Route::post('/announcements/{announcement}/dismiss', [AnnouncementController::class, 'dismiss'])->name('announcements.dismiss');
 
 
     // Notifications
@@ -266,6 +271,11 @@ Route::middleware(['auth', 'verified.email', 'role:admin'])
         Route::get('/reports/export/users-pdf', [AdminReportController::class, 'exportUsersPdf'])->name('reports.export.users-pdf');
         Route::get('/reports/export/appointments-pdf', [AdminReportController::class, 'exportAppointmentsPdf'])->name('reports.export.appointments-pdf');
         Route::get('/reports/export/crisis-reports-pdf', [AdminReportController::class, 'exportCrisisPdf'])->name('reports.export.crisis-pdf');
+
+        // Announcements
+        Route::get('/announcements', [AdminAnnouncementController::class, 'index'])->name('announcements.index');
+        Route::post('/announcements', [AdminAnnouncementController::class, 'store'])->name('announcements.store');
+        Route::delete('/announcements/{announcement}', [AdminAnnouncementController::class, 'destroy'])->name('announcements.destroy');
     });
 
 require __DIR__.'/auth.php';

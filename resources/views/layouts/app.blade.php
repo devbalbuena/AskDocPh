@@ -156,6 +156,23 @@
             </div>
         </header>
 
+        {{-- ── Global Announcement Banners ──────────────────── --}}
+        @foreach($globalAnnouncements ?? [] as $ann)
+        <div id="announcement-{{ $ann->id }}"
+             class="w-full px-6 py-3 text-sm font-medium flex items-center justify-between gap-4
+             {{ $ann->type === 'urgent' ? 'bg-red-600 text-white' : ($ann->type === 'warning' ? 'bg-yellow-500 text-white' : 'bg-blue-600 text-white') }}">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-bold">{{ $ann->title }}:</span>
+                <span>{{ $ann->message }}</span>
+                @if($ann->expires_at)
+                <span class="opacity-75 text-xs">· Expires {{ $ann->expires_at->diffForHumans() }}</span>
+                @endif
+            </div>
+            <button onclick="dismissAnnouncement({{ $ann->id }})"
+                    class="flex-shrink-0 opacity-75 hover:opacity-100 text-xl font-bold leading-none transition-opacity">&times;</button>
+        </div>
+        @endforeach
+
         {{-- Flash Messages --}}
         @if(session('success'))
         <div id="flash-msg" class="mx-6 mt-4 flex items-center gap-3 bg-green-100/50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm">
@@ -412,6 +429,24 @@ window.addEventListener('load', function() {
 });
 </script>
 
+
+<script>
+// ── Announcement Dismiss ─────────────────────────────────────
+function dismissAnnouncement(id) {
+    axios.post('/announcements/' + id + '/dismiss')
+        .then(() => {
+            const el = document.getElementById('announcement-' + id);
+            if (el) {
+                el.style.transition = 'opacity 0.3s ease';
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 300);
+            }
+        })
+        .catch(() => {}); // Silent fail — UX shouldn't block on this
+}
+</script>
+
 @stack('scripts')
+
 </body>
 </html>
