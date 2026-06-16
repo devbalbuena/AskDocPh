@@ -1,0 +1,314 @@
+@extends($layout)
+@section('title', 'My Profile')
+@section('page-title', 'My Profile')
+
+@section('content')
+<div class="max-w-3xl mx-auto space-y-6 pb-12">
+
+    {{-- Tabs --}}
+    <div class="border-b border-gray-200 mb-6">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            <a href="{{ route('profile.edit') }}" 
+               class="border-green-500 text-green-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                General Profile
+            </a>
+            <a href="{{ route('profile.security') }}" 
+               class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                Security Settings
+            </a>
+        </nav>
+    </div>
+
+    {{-- ── Profile Header Card ──────────────────────────────────────────────── --}}
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+
+        {{-- Cover Photo Banner --}}
+        <div class="relative w-full h-48 bg-green-800 overflow-hidden">
+            @if($user->cover_photo)
+                <img src="{{ Storage::url($user->cover_photo) }}"
+                     alt="Cover Photo"
+                     class="w-full h-full object-cover">
+            @else
+                <div class="absolute inset-0 bg-gradient-to-br from-green-700 via-green-800 to-emerald-900">
+                    <div class="absolute inset-0 opacity-20"
+                         style="background-image: radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px); background-size: 30px 30px;"></div>
+                </div>
+            @endif
+        </div>
+
+        {{-- Profile Info Row --}}
+        <div class="px-6 pb-6 relative">
+            {{-- Profile Photo (overlapping cover) --}}
+            <div class="absolute -top-12 left-6">
+                <div class="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden bg-green-100">
+                    @if($user->profile_photo)
+                        <img src="{{ Storage::url($user->profile_photo) }}"
+                             alt="{{ $user->display_name }}"
+                             class="w-full h-full object-cover">
+                    @else
+                        <div class="w-full h-full flex items-center justify-center text-3xl font-bold text-green-700">
+                            {{ strtoupper(substr($user->fname, 0, 1)) }}{{ strtoupper(substr($user->lname, 0, 1)) }}
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Name / Username / Bio / Role --}}
+            <div class="pt-14">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">{{ $user->display_name }}</h1>
+                        <p class="text-sm text-gray-500">{{ '@' . $user->username }}</p>
+                        {{-- Show bio as text only for non-doctor/patient roles --}}
+                        @if(!in_array($user->role, ['doctor', 'patient']) && $user->bio)
+                        <p class="text-sm text-gray-700 mt-2 leading-relaxed max-w-lg">{{ $user->bio }}</p>
+                        @endif
+                        {{-- For doctors: show key professional info in the header --}}
+                        @if($user->role === 'doctor' && !empty($professional['specialization']))
+                        <p class="text-sm text-gray-500 mt-1">{{ $professional['specialization'] }}</p>
+                        @endif
+                    </div>
+                    {{-- Role badge --}}
+                    <span class="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full capitalize
+                        {{ match($user->role) {
+                            'doctor' => 'bg-blue-100 text-blue-700',
+                            'admin'  => 'bg-green-100 text-green-700',
+                            default  => 'bg-gray-100 text-gray-600',
+                        } }}">
+                        {{ $user->role }}
+                    </span>
+                </div>
+
+                {{-- Meta info row --}}
+                <div class="flex flex-wrap items-center gap-4 mt-3 text-xs text-gray-500">
+                    @if($user->gender)
+                    <span class="flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        {{ ucfirst(str_replace('_', ' ', $user->gender)) }}
+                    </span>
+                    @endif
+                    @if($user->bday)
+                    <span class="flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        {{ $user->bday->format('F j, Y') }}
+                    </span>
+                    @endif
+                    <span class="flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        Joined {{ $user->created_at->format('F Y') }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ── Edit Profile Form ────────────────────────────────────────────────── --}}
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+        <h2 class="text-base font-semibold text-gray-900 mb-5">Edit Profile</h2>
+
+        @if($errors->any())
+        <div class="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+            <ul class="list-disc list-inside space-y-1">
+                @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+
+        <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="space-y-5">
+            @csrf
+            @method('PUT')
+
+            {{-- Name Row --}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="fname" class="block text-xs font-medium text-gray-700 mb-1.5">First Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="fname" name="fname" value="{{ old('fname', $user->fname) }}" required
+                           class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500 transition-colors">
+                </div>
+                <div>
+                    <label for="mname" class="block text-xs font-medium text-gray-700 mb-1.5">Middle Name <span class="text-gray-400">(optional)</span></label>
+                    <input type="text" id="mname" name="mname" value="{{ old('mname', $user->mname) }}"
+                           class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500 transition-colors">
+                </div>
+                <div>
+                    <label for="lname" class="block text-xs font-medium text-gray-700 mb-1.5">Last Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="lname" name="lname" value="{{ old('lname', $user->lname) }}" required
+                           class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500 transition-colors">
+                </div>
+            </div>
+
+            {{-- Username --}}
+            <div>
+                <label for="username" class="block text-xs font-medium text-gray-700 mb-1.5">Username <span class="text-red-500">*</span></label>
+                <input type="text" id="username" name="username" value="{{ old('username', $user->username) }}" required
+                       class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500 transition-colors">
+            </div>
+
+            {{-- Bio — admin only, hidden for doctors & patients --}}
+            @if(!in_array(auth()->user()->role, ['doctor', 'patient']))
+            <div>
+                <label for="bio" class="block text-xs font-medium text-gray-700 mb-1.5">Bio <span class="text-gray-400">(optional, max 500 characters)</span></label>
+                <textarea id="bio" name="bio" rows="3"
+                          class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500 resize-none transition-colors"
+                          placeholder="Tell others a little about you...">{{ old('bio', $user->bio) }}</textarea>
+            </div>
+            @endif
+
+            {{-- Gender & Birthday --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="gender" class="block text-xs font-medium text-gray-700 mb-1.5">Gender</label>
+                    <select id="gender" name="gender"
+                            class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500 transition-colors">
+                        <option value="">Prefer not to say</option>
+                        <option value="male"              {{ old('gender', $user->gender) === 'male'              ? 'selected' : '' }}>Male</option>
+                        <option value="female"            {{ old('gender', $user->gender) === 'female'            ? 'selected' : '' }}>Female</option>
+                        <option value="other"             {{ old('gender', $user->gender) === 'other'             ? 'selected' : '' }}>Other</option>
+                        <option value="prefer_not_to_say" {{ old('gender', $user->gender) === 'prefer_not_to_say' ? 'selected' : '' }}>Prefer not to say</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="bday" class="block text-xs font-medium text-gray-700 mb-1.5">Birthday</label>
+                    <input type="date" id="bday" name="bday"
+                           value="{{ old('bday', $user->bday?->format('Y-m-d')) }}"
+                           class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500 transition-colors">
+                </div>
+            </div>
+
+            {{-- Photo Uploads --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-100">
+                <div>
+                    <label for="profile_photo" class="block text-xs font-medium text-gray-700 mb-1.5">
+                        Profile Photo <span class="text-gray-400">(JPG, PNG, GIF, WebP — max 5 MB)</span>
+                    </label>
+                    @if($user->profile_photo)
+                    <div class="flex items-center gap-3 mb-2">
+                        <img src="{{ Storage::url($user->profile_photo) }}" class="w-12 h-12 rounded-full object-cover border border-gray-200" alt="Current profile photo">
+                        <span class="text-xs text-gray-500">Current photo</span>
+                    </div>
+                    @endif
+                    <input type="file" id="profile_photo" name="profile_photo" accept="image/*"
+                           class="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition-colors cursor-pointer">
+                </div>
+                <div>
+                    <label for="cover_photo" class="block text-xs font-medium text-gray-700 mb-1.5">
+                        Cover Photo <span class="text-gray-400">(JPG, PNG — max 10 MB)</span>
+                    </label>
+                    @if($user->cover_photo)
+                    <div class="flex items-center gap-3 mb-2">
+                        <img src="{{ Storage::url($user->cover_photo) }}" class="w-20 h-10 rounded-lg object-cover border border-gray-200" alt="Current cover photo">
+                        <span class="text-xs text-gray-500">Current cover</span>
+                    </div>
+                    @endif
+                    <input type="file" id="cover_photo" name="cover_photo" accept="image/*"
+                           class="w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition-colors cursor-pointer">
+                </div>
+            </div>
+
+            {{-- ── Patient-only: Emergency Contact ────────────────────────── --}}
+            @if(auth()->user()->role === 'patient')
+            <div class="pt-4 border-t border-gray-200 space-y-4">
+                <h3 class="text-base font-semibold text-gray-900">Emergency Contact</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="emergency_contact_name" class="block text-xs font-medium text-gray-700 mb-1.5">
+                            Emergency Contact Name
+                        </label>
+                        <input type="text" id="emergency_contact_name" name="emergency_contact_name"
+                               value="{{ old('emergency_contact_name', $emergency['emergency_name'] ?? '') }}"
+                               placeholder="Full name of emergency contact"
+                               class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors">
+                    </div>
+                    <div>
+                        <label for="emergency_contact_number" class="block text-xs font-medium text-gray-700 mb-1.5">
+                            Emergency Contact Number
+                        </label>
+                        <input type="text" id="emergency_contact_number" name="emergency_contact_number"
+                               value="{{ old('emergency_contact_number', $emergency['emergency_number'] ?? '') }}"
+                               placeholder="e.g. +63 912 345 6789"
+                               class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="emergency_contact_relationship" class="block text-xs font-medium text-gray-700 mb-1.5">
+                            Relationship
+                        </label>
+                        <select id="emergency_contact_relationship" name="emergency_contact_relationship"
+                                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-green-500 transition-colors">
+                            <option value="">Select Relationship</option>
+                            @foreach(['Parent', 'Spouse', 'Sibling', 'Friend', 'Guardian', 'Other'] as $rel)
+                            <option value="{{ $rel }}" {{ old('emergency_contact_relationship', $emergency['emergency_relationship'] ?? '') === $rel ? 'selected' : '' }}>{{ $rel }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            {{-- ── Doctor-only: Professional Information ────────────────────── --}}
+            @if(auth()->user()->role === 'doctor')
+            <div class="pt-4 border-t border-gray-200 space-y-4">
+                <h3 class="text-base font-semibold text-gray-900">Professional Information</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="specialization" class="block text-xs font-medium text-gray-700 mb-1.5">
+                            Specialization
+                        </label>
+                        <input type="text" id="specialization" name="specialization"
+                               value="{{ old('specialization', $professional['specialization'] ?? '') }}"
+                               placeholder="e.g. Psychiatry, Psychology"
+                               class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors">
+                    </div>
+                    <div>
+                        <label for="prc_license_number" class="block text-xs font-medium text-gray-700 mb-1.5">
+                            PRC License Number
+                        </label>
+                        <input type="text" id="prc_license_number" name="prc_license_number"
+                               value="{{ old('prc_license_number', $professional['prc_license'] ?? '') }}"
+                               placeholder="e.g. 0012345"
+                               class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="hospital_affiliation" class="block text-xs font-medium text-gray-700 mb-1.5">
+                            Hospital Affiliation
+                        </label>
+                        <input type="text" id="hospital_affiliation" name="hospital_affiliation"
+                               value="{{ old('hospital_affiliation', $professional['hospital'] ?? '') }}"
+                               placeholder="e.g. Philippine General Hospital"
+                               class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors">
+                    </div>
+                    <div>
+                        <label for="years_experience" class="block text-xs font-medium text-gray-700 mb-1.5">
+                            Years of Experience
+                        </label>
+                        <input type="number" id="years_experience" name="years_experience" min="0" max="60"
+                               value="{{ old('years_experience', $professional['years_experience'] ?? '') }}"
+                               placeholder="e.g. 5"
+                               class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors">
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            {{-- Submit --}}
+            <div class="pt-4 flex justify-end">
+                <button type="submit"
+                        class="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-8 py-2.5 rounded-xl transition-colors shadow-sm">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+
+
+</div>
+@endsection

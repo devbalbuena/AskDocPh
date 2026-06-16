@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\DoctorApplication;
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,14 +18,48 @@ class DatabaseSeeder extends Seeder
         $this->call(AdminSeeder::class);
 
         // Seed a test patient user
-        User::create([
-            'email'    => 'patient@askdocph.com',
-            'password' => Hash::make('Patient@1234'),
-            'username' => 'testpatient',
-            'fname'    => 'Test',
-            'mname'    => null,
-            'lname'    => 'Patient',
-            'role'     => 'patient',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'patient@askdocph.com'],
+            [
+                'password' => Hash::make('Patient@1234'),
+                'username' => 'testpatient',
+                'fname'    => 'Test',
+                'mname'    => null,
+                'lname'    => 'Patient',
+                'role'     => 'patient',
+                'doctor_status' => 'none',
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Seed an approved doctor user for testing
+        $doctor = User::updateOrCreate(
+            ['email' => 'doctor@askdocph.com'],
+            [
+                'password' => Hash::make('Doctor@1234'),
+                'username' => 'testdoctor',
+                'fname'    => 'Test',
+                'mname'    => null,
+                'lname'    => 'Doctor',
+                'role'     => 'doctor',
+                'doctor_status' => 'approved',
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Seed a DoctorApplication record for the test doctor
+        // so that /admin/doctor-applications shows at least one record
+        if ($doctor) {
+            DoctorApplication::updateOrCreate(
+                ['user_id' => $doctor->id],
+                [
+                    'status'       => 'approved',
+                    'submitted_at' => now()->subDays(7),
+                    'reviewed_at'  => now()->subDays(3),
+                    'admin_notes'  => 'Seeded test doctor — approved automatically.',
+                ]
+            );
+        }
     }
 }
+

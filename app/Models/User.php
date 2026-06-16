@@ -6,10 +6,11 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
@@ -36,6 +37,14 @@ class User extends Authenticatable
         'online_status',
         'allow_ai_recommendation',
         'email_verified_at',
+        'two_factor_secret',
+        'two_factor_enabled',
+        'two_factor_code',
+        'two_factor_expires_at',
+        'id_document_path',
+        'id_verified_at',
+        'id_verification_status',
+        'dark_mode',
     ];
 
     /**
@@ -60,10 +69,35 @@ class User extends Authenticatable
             'bday'                    => 'date',
             'allow_ai_recommendation' => 'boolean',
             'password'                => 'hashed',
+            'two_factor_enabled'      => 'boolean',
+            'two_factor_expires_at'   => 'datetime',
+            'id_verified_at'          => 'datetime',
         ];
     }
 
     // ─── Computed helpers ─────────────────────────────
+
+    public function isDemo(): bool
+    {
+        return in_array($this->email, [
+            'admin@askdocph.com',
+            'doctor@askdocph.com',
+            'patient@askdocph.com',
+        ]);
+    }
+
+    public function isVerifiedDoctor(): bool
+    {
+        return $this->role === 'doctor'
+            && $this->doctor_status === 'approved';
+    }
+
+    public function isVerifiedPatient(): bool
+    {
+        return $this->role === 'patient'
+            && $this->id_verification_status === 'approved'
+            && $this->id_verified_at !== null;
+    }
 
     public function getFullNameAttribute(): string
     {
@@ -92,6 +126,26 @@ class User extends Authenticatable
     public function followers(): HasMany
     {
         return $this->hasMany(UserFollow::class, 'following_id');
+    }
+
+    /** Check whether the currently authenticated user is following this user */
+    public function isFollowing(User $user): bool
+    {
+        return $this->following()
+            ->where('following_id', $user->id)
+            ->exists();
+    }
+
+    /** Total number of followers this user has */
+    public function followersCount(): int
+    {
+        return $this->followers()->count();
+    }
+
+    /** Total number of users this user is following */
+    public function followingCount(): int
+    {
+        return $this->following()->count();
     }
 
     public function bookmarks(): HasMany
@@ -181,5 +235,12 @@ class User extends Authenticatable
     public function doctorSchedules(): HasMany
     {
         return $this->hasMany(DoctorSchedule::class, 'doctor_id');
+    }
+
+    // ─── Reviews ──────────────────────────────────────
+
+    public function doctorReviews(): HasMany
+    {
+        return $this->hasMany(DoctorReview::class, 'doctor_id');
     }
 }
